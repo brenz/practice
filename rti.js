@@ -47,4 +47,4 @@ var isRoman = function (n) {
     }
     return 0;
 }
-romanToInt(process.argv[2]);
+console.log(romanToInt(process.argv[2]));
