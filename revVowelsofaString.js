@@ -7,13 +7,12 @@ var reverseVowels = function(s) {
   const vowelstring="aeiouAEIOU";
   let vowelstack="";
   for (let x in s){
-      //console.log(vowelstring.indexOf(s[x]));
       if(vowelstring.indexOf(s[x])!=-1){
         vowelstack=vowelstack+s[x];
       }
   }
   vowelarr=vowelstack.split('');
-  console.log(vowelarr);
+  //console.log(vowelarr);
   for (let x in s){
       if(vowelstring.indexOf(s[x])!=-1){
           result=result+vowelarr.pop();  
@@ -24,4 +23,4 @@ var reverseVowels = function(s) {
   return result;  
 };
 
-console.log(reverseVowels(process.argv[2]));
+//console.log(reverseVowels(process.argv[2]));
