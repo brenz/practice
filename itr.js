@@ -19,6 +19,7 @@ var intToRoman = function (num) {
   return result;
 };
 
-console.log(intToRoman(process.argv[2]))
+//console.log(intToRoman(process.argv[2]))
+intToRoman(process.argv[2]);
 
 

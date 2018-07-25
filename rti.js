@@ -12,7 +12,7 @@ var romanToInt = function (s) {
         let intNum = isRoman(num);
         let intPerNum = isRoman(perviousNum);
         if (intNum == 0) {
-            console.log("Not Valid Roman Number");
+            //console.log("Not Valid Roman Number");
             return;
         }
         if (intNum >= intPerNum) {
@@ -47,4 +47,5 @@ var isRoman = function (n) {
     }
     return 0;
 }
-console.log(romanToInt(process.argv[2]));
+//console.log(romanToInt(process.argv[2]));
+romanToInt(process.argv[2])
