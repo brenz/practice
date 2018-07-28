@@ -1,3 +1,5 @@
+var d3 = require("d3");
+
 var w=300;
 var h=100;
 var padding=2;

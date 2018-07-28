@@ -1,0 +1,22 @@
+{
+  "name": "practis",
+  "version": "1.0.0",
+  "description": "practic",
+  "scripts": {
+    "start": "node src/d3_practice.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheetstone/practice.git"
+  },
+  "author": "sheetstone",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sheetstone/practice/issues"
+  },
+  "homepage": "https://github.com/sheetstone/practice#readme",
+  "dependencies": {
+    "d3": "^5.5.0"
+  }
+}
