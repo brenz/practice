@@ -17,13 +17,25 @@
       var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
       var renderer = new THREE.CanvasRenderer();
+      //var renderer = new THREE.WebGLRenderer();
       renderer.setSize( window.innerWidth, window.innerHeight );
       document.body.appendChild( renderer.domElement );
 
+      var cube;
+      var loader = new THREE.JSONLoader();
+      loader.load('cube.json',function(g,m){
+        cube = new THREE.Mesh(g,m);
+        scene.add(cube);
+
+        cube.position.z = -6;
+        cube.rotation.z = 0.4
+      })
+
       var geometry = new THREE.BoxGeometry( 1, 1, 1 );
       var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-      var cube = new THREE.Mesh( geometry, material );
-      scene.add( cube );
+      var sphere = new THREE.Mesh( geometry, material );
+
+      scene.add( sphere );
 
       var mouseX = 0, mouseY = 0,
           windowHalfX = window.innerWidth / 2,
@@ -44,8 +56,8 @@
         requestAnimationFrame( animate );
         render();
 
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
+        sphere.rotation.x += 0.01;
+        sphere.rotation.y += 0.01;
 
       }
 

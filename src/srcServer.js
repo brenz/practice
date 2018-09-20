@@ -5,7 +5,13 @@ var path = require("path");
 var app=express();
 
 app.get('/', function(req, res){
-  res.sendFile(path.join(__dirname, "kp_flame.html"));
+  res.sendFile(path.join(__dirname, "kp_flame_webGL.html"));
+});
+app.get('/canvas', function(req, res){
+  res.sendFile(path.join(__dirname, "kp_flame_canvas.html"));
+});
+app.get('/sphere', function(req, res){
+  res.sendFile(path.join(__dirname, "3js_sphere.html"));
 });
 
 app.use(express.static(path.join(__dirname, '.')));
