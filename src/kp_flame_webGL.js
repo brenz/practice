@@ -6,10 +6,9 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
 
-  camera, scene, renderer, composer,
+  camera, scene, renderer, composer, spotLight, lightHelper,
 
-  flame,
-  curr=0, step=0.01;
+  flame, flames=[]
 
 init();
 animate();
@@ -17,7 +16,7 @@ animate();
 
 function init() {
 
-  var container, particle;
+  var container;
 
   container = document.createElement('div');
   document.body.appendChild(container);
@@ -25,8 +24,26 @@ function init() {
   camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
   camera.position.z = 1000;
 
+
+
   scene = new THREE.Scene();
-  scene.background=new THREE.Color("rgb(0,20,40)")
+  scene.background=new THREE.Color("rgb(0,20,40)");
+
+  spotLight = new THREE.SpotLight( 0xffffff, 10 );
+  spotLight.position.set( 0, 0, 500 );
+  spotLight.angle = Math.PI / 4;
+  spotLight.penumbra = 0.05;
+  spotLight.decay = 2;
+  spotLight.distance = 1000;
+  spotLight.castShadow = true;
+  spotLight.shadow.mapSize.width = 1024;
+  spotLight.shadow.mapSize.height = 1024;
+  spotLight.shadow.camera.near = 10;
+  spotLight.shadow.camera.far = 200;
+  scene.add( spotLight );
+
+  lightHelper = new THREE.SpotLightHelper( spotLight );
+  scene.add( lightHelper);
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -34,53 +51,42 @@ function init() {
   container.appendChild(renderer.domElement);
 
   // Flame with point material
-  // var flame;
+
   var loader = new THREE.JSONLoader();
-  loader.load('blowspoon.json', function (g, m) {
-    g.scale(200,200,200);
-    for ( var i = 0; i < 5000; i ++ ) {
+  loader.load('KPSM_flame.json', function (g, m) {
+    g.scale(500,500,500);
 
-      var dot = new THREE.Vector3();
-      dot.x = THREE.Math.randFloatSpread( 700 );
-      dot.y = THREE.Math.randFloatSpread( 700 );
-      dot.z = THREE.Math.randFloatSpread( 700 );
+    var pointmaterial = new THREE.PointsMaterial(  { color: 0x4d83bb ,size:2 } );
 
-      g.vertices.push( dot );
 
+  for (var i=0; i<20; i ++){
+      var flame=new THREE.Points(g, pointmaterial);
+      flame.position.z = i*10;
+      flame.position.y = 0;
+      flame.position.x = windowHalfX/2-100;
+      flame.scale.multiplyScalar(1.5-i*0.01);
+      scene.add(flame);
+      flames.push(flame);
     }
-
-    var pointmaterial = new THREE.PointsMaterial(  { color: 0xb1dfff ,size:2 } );
-
-    flame = new THREE.Points(g, pointmaterial);
-
-    flame.position.z = 0;
-    flame.position.y = -600;
-    flame.position.x = windowHalfX/2-100;
-    //flame.rotation.y = -0.3;
-    //cube.scale.set(1,1,1);
-    flame.scale.multiplyScalar(1.5);
-    scene.add(flame);
   })
 
   var renderScene = new THREE.RenderPass( scene, camera );
-			var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-			bloomPass.renderToScreen = true;
-			bloomPass.threshold = 0//params.bloomThreshold;
-			bloomPass.strength = 0.5//params.bloomStrength;
-			bloomPass.radius = 0.05//params.bloomRadius;
+  var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+      bloomPass.renderToScreen = true;
+      bloomPass.threshold = 0//params.bloomThreshold;
+      bloomPass.strength = 0.5//params.bloomStrength;
+      bloomPass.radius = 0.05//params.bloomRadius;
 	composer = new THREE.EffectComposer( renderer );
 			composer.setSize( window.innerWidth, window.innerHeight );
 			composer.addPass( renderScene );
 			composer.addPass( bloomPass );
 
-  document.addEventListener('mousemove', onDocumentMouseMove, false);
-  document.addEventListener('touchstart', onDocumentTouchStart, false);
-  document.addEventListener('touchmove', onDocumentTouchMove, false);
-  document.addEventListener('wheel', onDocumentMouseScroll,false);
-  //
 
+  addMouseEvents();
   window.addEventListener('resize', onWindowResize, false);
-
+  document.getElementById('imemerse').addEventListener('click', function(e){
+    removeMouseEvents();
+  })
 
 }
 
@@ -128,6 +134,7 @@ function onDocumentTouchMove(event) {
   }
 
 }
+
 function onDocumentMouseScroll(event) {
     if (event.deltaY>0){
       camera.position.z += 10//(1000 - camera.position.y)*event.deltaY*0.05;
@@ -152,12 +159,21 @@ function render() {
   camera.lookAt(scene.position);
   renderer.render(scene, camera);
   composer.render();
-
 }
 function controler() {
-
   document.getElementById("camera_position_x").innerHTML=camera.position.x;
   document.getElementById("camera_position_y").innerHTML=camera.position.y;
   document.getElementById("camera_position_z").innerHTML=camera.position.z;
-
+}
+function addMouseEvents(){
+  document.addEventListener('mousemove', onDocumentMouseMove, false);
+  document.addEventListener('touchstart', onDocumentTouchStart, false);
+  document.addEventListener('touchmove', onDocumentTouchMove, false);
+  document.addEventListener('wheel', onDocumentMouseScroll,false);
+}
+function removeMouseEvents(){
+  document.removeEventListener('mousemove', onDocumentMouseMove, false);
+  document.removeEventListener('touchstart', onDocumentTouchStart, false);
+  document.removeEventListener('touchmove', onDocumentTouchMove, false);
+  document.removeEventListener('wheel', onDocumentMouseScroll,false);
 }
