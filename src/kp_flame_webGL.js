@@ -6,7 +6,7 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
 
-  camera, scene, renderer, composer, spotLight, lightHelper,
+  camera, scene, renderer, composer, spotLight, lightHelper, stats,
 
   flame, flames=[]
 
@@ -40,10 +40,10 @@ function init() {
   spotLight.shadow.mapSize.height = 1024;
   spotLight.shadow.camera.near = 10;
   spotLight.shadow.camera.far = 200;
-  scene.add( spotLight );
+  //scene.add( spotLight );
 
   lightHelper = new THREE.SpotLightHelper( spotLight );
-  scene.add( lightHelper);
+  //scene.add( lightHelper);
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -83,6 +83,13 @@ function init() {
 
 
   addMouseEvents();
+
+  // Stats indicator
+  stats = new Stats();
+  container.appendChild( stats.dom );
+
+  //
+
   window.addEventListener('resize', onWindowResize, false);
   document.getElementById('imemerse').addEventListener('click', function(e){
     removeMouseEvents();
@@ -148,6 +155,7 @@ function onDocumentMouseScroll(event) {
 function animate() {
   requestAnimationFrame(animate);
   render();
+  stats.update();
 }
 
 

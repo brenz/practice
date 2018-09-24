@@ -6,7 +6,9 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
 
-  camera, scene, renderer;
+  camera, scene, renderer, stats,
+
+  flame, flames=[]
 
 init();
 animate();
@@ -25,69 +27,41 @@ function init() {
   scene.background=new THREE.Color("rgb(0,45,95)")
 
   renderer = new THREE.CanvasRenderer();
-  renderer.setPixelRatio(window.devicePixelRatio);
+  //renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
 
+  // Flame with point material
 
-  var PI2 = Math.PI * 2;
-    // spMaterial
-  var spMaterial = new THREE.SpriteCanvasMaterial({
-
-    color: 0xffffff,
-    program: function (context) {
-
-      context.beginPath();
-
-      var gradient = context.createRadialGradient(1, 1, 0, 1, 1, 1);
-      gradient.addColorStop(0, "white");
-      gradient.addColorStop(0.3, "white");
-      gradient.addColorStop(0.3, "rgba(171,230,255,0.8)");
-      //var stopPoint = Math.random()/2+0.5
-      gradient.addColorStop(1, "rgba(171,230,255,0)");
-
-      context.fillStyle=gradient;
-      context.arc(1, 1, 1, 0, PI2, true);
-      context.fill();
-
-    }
-  });
-
-  // flame with point material
-  var flame;
   var loader = new THREE.JSONLoader();
   loader.load('KPSM_flame.json', function (g, m) {
     g.scale(500,500,500);
-   /* for ( var i = 0; i < 5000; i ++ ) {
 
-      var dot = new THREE.Vector3();
-      //dot.x = THREE.Math.randFloatSpread( 700 );
-      //dot.y = THREE.Math.randFloatSpread( 700 );
-      //dot.z = THREE.Math.randFloatSpread( 700 );
+    var pointmaterial = new THREE.PointsMaterial(  { color: 0xffffff ,size:2 } );
 
-      g.vertices.push( dot );
 
-    }*/
-
-    var pointmaterial = new THREE.PointsMaterial(  { color: 0xb1dfff ,size:2 } );
-
-    flame = new THREE.Points(g, pointmaterial);
-
-    //flame.position.z = 500;
-    flame.position.y = -250;
-    //flame.position.x = 400;
-    //flame.scale.set(1,1,1);
-    flame.scale.multiplyScalar(1);
-    scene.add(flame);
+  for (var i=0; i<2; i ++){
+      var flame=new THREE.Points(g, pointmaterial);
+      flame.position.z = i*10;
+      flame.position.y = 0;
+      flame.position.x = windowHalfX/2-100;
+      flame.scale.multiplyScalar(1.5-i*0.01);
+      scene.add(flame);
+      flames.push(flame);
+    }
   })
 
-  document.addEventListener('mousemove', onDocumentMouseMove, false);
-  document.addEventListener('touchstart', onDocumentTouchStart, false);
-  document.addEventListener('touchmove', onDocumentTouchMove, false);
-  document.addEventListener('wheel', onDocumentMouseScroll,false);
+ addMouseEvents();
+  // Stats indicator
+  stats = new Stats();
+  container.appendChild( stats.dom );
+
   //
 
   window.addEventListener('resize', onWindowResize, false);
+  document.getElementById('imemerse').addEventListener('click', function(e){
+    removeMouseEvents();
+  })
 
 }
 
@@ -136,8 +110,12 @@ function onDocumentTouchMove(event) {
 
 }
 function onDocumentMouseScroll(event) {
-    console.log(event.deltaY);
-    //camera.position.y = (1000 - camera.position.y)*event.deltaY*0.05;
+    if (event.deltaY>0){
+      camera.position.z += 10//(1000 - camera.position.y)*event.deltaY*0.05;
+    }else{
+      camera.position.z -= 10//(1000 - camera.position.y)*event.deltaY*0.05;
+    }
+    controler();
     render();
 
 }
@@ -145,11 +123,30 @@ function onDocumentMouseScroll(event) {
 function animate() {
   requestAnimationFrame(animate);
   render();
+  stats.update();
 }
 
 function render() {
-  camera.position.x += (mouseX - camera.position.x) * .05;
-  camera.position.y += (- mouseY + 200 - camera.position.y) * .05;
+controler();
+  camera.position.x += (mouseX - camera.position.x) * 0.01;
+  camera.position.y += (- mouseY - camera.position.y) * 0.01;
   camera.lookAt(scene.position);
   renderer.render(scene, camera);
+}
+function controler() {
+  document.getElementById("camera_position_x").innerHTML=camera.position.x;
+  document.getElementById("camera_position_y").innerHTML=camera.position.y;
+  document.getElementById("camera_position_z").innerHTML=camera.position.z;
+}
+function addMouseEvents(){
+  document.addEventListener('mousemove', onDocumentMouseMove, false);
+  document.addEventListener('touchstart', onDocumentTouchStart, false);
+  document.addEventListener('touchmove', onDocumentTouchMove, false);
+  document.addEventListener('wheel', onDocumentMouseScroll,false);
+}
+function removeMouseEvents(){
+  document.removeEventListener('mousemove', onDocumentMouseMove, false);
+  document.removeEventListener('touchstart', onDocumentTouchStart, false);
+  document.removeEventListener('touchmove', onDocumentTouchMove, false);
+  document.removeEventListener('wheel', onDocumentMouseScroll,false);
 }

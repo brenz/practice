@@ -12,21 +12,20 @@
     <section class="intro row align-items-center">
       <div class="col-md-6">
         <h1 >Make your mark on the future of medicine</h1>
-        <button>Immerse yourself →</button>
+        <button id="imemerse">Immerse yourself →</button>
       </div>
     </section>
 
+    <section class="controler">
+      <div>Camera Position X: <span id="camera_position_x"></span></div>
+      <div>Camera Position Y: <span id="camera_position_y"></span></div>
+      <div>Camera Position Z: <span id="camera_position_z"></span></div>
+    </section>
+
     <script src="js/three.js"></script>
-    <script src="js/OBJLoader.js"></script>
-		<script src="js/renderers/Projector.js"></script>
-    <script src="js/renderers/CanvasRenderer.js"></script>
-    <script src="js/postprocessing/EffectComposer.js"></script>
-		<script src="js/postprocessing/RenderPass.js"></script>
-    <script src="js/postprocessing/ShaderPass.js"></script>
-    <script src="js/shaders/CopyShader.js"></script>
-		<script src="js/shaders/LuminosityHighPassShader.js"></script>
-		<script src="js/postprocessing/UnrealBloomPass.js"></script>
-    <!--<script src="kp_flame_webGL.js"></script>-->
+    <script src="js/renderers/projector.js"></script>
+    <script src="js/renderers/canvasRenderer.js"></script>
+    <script src="js/stats.min.js"></script>
     <script src="kp_flame_Canvas.js"></script>
 
 	</body>
