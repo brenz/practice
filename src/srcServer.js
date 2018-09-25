@@ -13,6 +13,9 @@ app.get('/canvas', function(req, res){
 app.get('/sphere', function(req, res){
   res.sendFile(path.join(__dirname, "3js_sphere.html"));
 });
+app.get('/d3', function(req, res){
+  res.sendFile(path.join(__dirname, "d3_practice.html"));
+});
 
 app.use(express.static(path.join(__dirname, '.')));
 app.listen(3000, () => console.log('Example app listening on port 3000!'))

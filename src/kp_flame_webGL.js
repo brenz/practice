@@ -53,7 +53,7 @@ function init() {
   // Flame with point material
 
   var loader = new THREE.JSONLoader();
-  loader.load('KPSM_flame.json', function (g, m) {
+  loader.load('./data/KPSM_flame.json', function (g, m) {
     g.scale(500,500,500);
     var pointmaterial = new THREE.PointsMaterial(  { color: 0x4d83bb ,size:2 } );
     for (var i=0; i<20; i ++){
