@@ -55,19 +55,16 @@ function init() {
   var loader = new THREE.JSONLoader();
   loader.load('KPSM_flame.json', function (g, m) {
     g.scale(500,500,500);
-
     var pointmaterial = new THREE.PointsMaterial(  { color: 0x4d83bb ,size:2 } );
-
-
-  for (var i=0; i<20; i ++){
-      var flame=new THREE.Points(g, pointmaterial);
-      flame.position.z = i*10;
-      flame.position.y = 0;
-      flame.position.x = windowHalfX/2-100;
-      flame.scale.multiplyScalar(1.5-i*0.01);
-      scene.add(flame);
-      flames.push(flame);
-    }
+    for (var i=0; i<20; i ++){
+        var flame=new THREE.Points(g, pointmaterial);
+        flame.position.z = i*10;
+        flame.position.y = 0;
+        flame.position.x = windowHalfX/2-100;
+        flame.scale.multiplyScalar(1.5-i*0.01);
+        scene.add(flame);
+        flames.push(flame);
+      }
   })
 
   var renderScene = new THREE.RenderPass( scene, camera );
