@@ -4,7 +4,7 @@
  * @return {number[]}
  */
 
- /* runtime 120ms
+/* runtime 120ms
 var twoSum = function (nums, target) {
   for (let x=0;x<nums.length;x++) {
     for (let i=x+1; i<nums.length; i++){
