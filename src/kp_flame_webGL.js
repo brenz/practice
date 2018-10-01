@@ -11,8 +11,8 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, spotLight, lightHelper, stats,
-  flames = [], flame,
-  shinDots = [], shinDot,
+  flame,
+  shinDots = [],
   cameraPositions = [],
   cameraInter = 0,
   rotateTweenL, rotateTweenR
@@ -70,66 +70,50 @@ function init() {
   var loader = new THREE.JSONLoader();
   loader.load('./data/KPSM_flame.json', function (g, m) {
     g.scale(500, 500, 500);
-    var pointmaterial = new THREE.PointsMaterial({ color: 0x4d83bb, size: 2 });
+    var gg=g.clone()
     for (var i = 0; i < 10; i++) {
-      // Create Flame scuplture;
-      flame = new THREE.Points(g, pointmaterial);
+      g.merge(gg.clone().translate(0,0,-i*12));
+    }
 
-      // shaking the particiale
-      for (var j = 0; j < flame.geometry.vertices.length; j++) {
-        flame.geometry.vertices[j].x += Math.random() - 1;
-        flame.geometry.vertices[j].y += Math.random() - 1;
-        flame.geometry.vertices[j].z += Math.random() - 1;
-      }
+    /* shaking the particiale
+    for (var j = 0; j < g.vertices.length; j++) {
+      g.vertices[j].x += Math.random() - 1;
+      g.vertices[j].y += Math.random() - 1;
+      g.vertices[j].z += Math.random() - 1;
+    }*/
 
-      // 4 Add shinny Particles
-      var geometry = new THREE.SphereGeometry(5, 32, 32);
-      var material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      var shinDot = new THREE.Mesh(geometry, material);
-      var length = Math.floor(Math.random() * 4132); // Pick up a random dot to perform
+    var pointmaterial = new THREE.PointsMaterial({ color: 0x4d83bb, size: 2 });
+
+    // Create Flame scuplture;
+    flame = new THREE.Points(g, pointmaterial);
+
+    // 4 Add shinny Particles
+    var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
+    var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    for (var k=0; k<5; k++){
+      var shinDot = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      var length = Math.floor(Math.random() * flame.geometry.vertices.length); // Pick up a random dot to perform
       shinDot.position.add(flame.geometry.vertices[length]);
       flame.add(shinDot);
       shinDots.push(shinDot);
-
-      // Adjust flame position
-      flame.position.z = i * 12;
-      flame.position.y = 0;
-      flame.position.x = windowHalfX / 2 - 100;
-      flame.scale.multiplyScalar(1.8);
-
-      scene.add(flame);
-      flames.push(flame);
     }
+
+    // Adjust flame position
+    flame.position.z = i * 12;
+    flame.position.y = 0;
+    flame.position.x = windowHalfX / 2 - 100;
+    flame.scale.multiplyScalar(1.8);
+
+    scene.add(flame);
+
+    // Add CamearPosition Query
     cameraPositions.push(new THREE.Vector3(flame.position.x, 0, 1000));
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x + flame.position.x,
         shinDots[i].position.y,
-        shinDots[i].position.z + 50));
+        200));
     }
-
-
-    //var spriteMap = new THREE.TextureLoader().load('../../images/sprite.png');
-    //var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-    //shinDot = new THREE.Sprite(spriteMaterial);
-    /*var geometry = new THREE.SphereGeometry( 5, 32, 32 );
-    var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
-    for (var i = 0; i < 4; i++) {
-      var shinDot = new THREE.Mesh( geometry, material );
-      var row=Math.floor(Math.random()*9);
-      var length=Math.floor(Math.random()*4132)
-      shinDot.position
-             //.add(flames[row].position)
-             .add(flames[row].geometry.vertices[length]);
-      shinDot.position.x += windowHalfX / 2 - 100;
-      console.log(flames[row].geometry.vertices[length]);
-      console.log(shinDot.position);
-      scene.add (shinDot);
-      var cameraPosition=new THREE.Vector3(shinDot.position.x,shinDot.position.y,shinDot.position.z+50);
-
-      cameraPositions.push(cameraPosition);
-      shinDots.push(shinDot);
-    }*/
 
     // 9. Start Flamer rotation
     flameRotation();
@@ -207,10 +191,10 @@ function animateVector3(vectorToAnimate, target, options) {
 }
 function flameRotation() {
   if (!rotateTweenL && !rotateTweenR) {
-    rotateTweenL = new TWEEN.Tween(flames[0].rotation)
+    rotateTweenL = new TWEEN.Tween(flame.rotation)
       .to({ y: 0.1 }, 2000)
       .easing(TWEEN.Easing.Quadratic.InOut)
-    rotateTweenR = new TWEEN.Tween(flames[0].rotation)
+    rotateTweenR = new TWEEN.Tween(flame.rotation)
       .to({ y: -0.1 }, 2000)
       .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenL.chain(rotateTweenR);
@@ -232,13 +216,12 @@ function removeMouseEvents() {
   document.removeEventListener('wheel', onDocumentMouseScroll, false);
 }
 function moveCamera() {
-  // for (var i=0; i<cameraPositions.length;i++){
+  rotateTweenL.stop();
+  rotateTweenR.stop();
   animateVector3(camera.position, cameraPositions[cameraInter], {
     duration: 1000,
     easing: TWEEN.Easing.Quadratic.InOut,
-    update: function (d) {
-      //do thing while moving
-    },
+    update: function (d) {},
     callback: function () {
       cameraInter++;
     }
