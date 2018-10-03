@@ -11,7 +11,7 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, spotLight, lightHelper, stats,
-  flame,
+  flame,flameGeometry,
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,
@@ -43,7 +43,7 @@ function init() {
 
   // 2. Create Spotlight https://threejs.org/docs/#api/en/lights/SpotLight
   spotLight = new THREE.SpotLight(0xffffff, 10);
-  spotLight.position.set(0, 0, 500);
+  spotLight.position.set(0, 0, 800);
   spotLight.angle = Math.PI / 4;
   spotLight.penumbra = 0.05;
   spotLight.decay = 2;
@@ -53,10 +53,13 @@ function init() {
   spotLight.shadow.mapSize.height = 1024;
   spotLight.shadow.camera.near = 10;
   spotLight.shadow.camera.far = 200;
-  // scene.add( spotLight );
+  scene.add( spotLight );
 
   lightHelper = new THREE.SpotLightHelper(spotLight);
-  // scene.add( lightHelper);
+  scene.add( lightHelper);
+
+  var ambientLight = new THREE.AmbientLight(0xffffff);
+  scene.add(ambientLight);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -68,32 +71,114 @@ function init() {
   // 3.2 Create flame element by PointsMaterial
   // https://threejs.org/docs/#api/en/materials/PointsMaterial
   var loader = new THREE.JSONLoader();
+  uniforms = {
+    texture:   { value: new THREE.TextureLoader().load( "img/spark1.png" ) },
+    opactiy: {value: 1}
+  };
+  var shaderMaterial = new THREE.ShaderMaterial( {
+    uniforms:       uniforms,
+    vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+    fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+    blending:       THREE.AdditiveBlending,
+    depthTest:      false,
+    transparent:    true,
+    vertexColors:   true
+  });
+
   loader.load('./data/KPSM_flame.json', function (g, m) {
     g.scale(500, 500, 500);
     var gg=g.clone()
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 5; i++) {
       g.merge(gg.clone().translate(0,0,-i*12));
     }
 
-    /* shaking the particiale
-    for (var j = 0; j < g.vertices.length; j++) {
+    // shaking the particiale
+    /*for (var j = 0; j < g.vertices.length; j++) {
       g.vertices[j].x += Math.random() - 1;
       g.vertices[j].y += Math.random() - 1;
       g.vertices[j].z += Math.random() - 1;
     }*/
 
+    // Create matrial
     var pointmaterial = new THREE.PointsMaterial({ color: 0x4d83bb, size: 2 });
-
+    var mashPhoneMatrial = new THREE.MeshPhongMaterial( {
+      color: 0xcccccc, specular: 0xffffff, shininess: 250,
+      side: THREE.DoubleSide, vertexColors: THREE.VertexColors
+    } );
     // Create Flame scuplture;
-    flame = new THREE.Points(g, pointmaterial);
+
+    flameGeometry = new THREE.BufferGeometry();
+    var positions = [];
+    var normals = [];
+    var colors = [];
+    var color = new THREE.Color();
+    var n=500;
+    var d = 2, d2 = d / 2;	// individual triangle size
+    var pA = new THREE.Vector3();
+    var pB = new THREE.Vector3();
+    var pC = new THREE.Vector3();
+    var cb = new THREE.Vector3();
+    var ab = new THREE.Vector3();
+    //var triangles=flameGeometry.attributes.position.array.length;
+    var triangles=g.vertices.length;
+    for ( var j = 0; j < triangles; j ++ ) {
+      d = Math.random()*3;
+      d2 = d / 2;	// individual triangle size
+      // positions
+      var x = g.vertices[j].x;
+      var y = g.vertices[j].y;
+      var z = g.vertices[j].z;
+      var ax = x + Math.random() * d - d2;
+      var ay = y + Math.random() * d - d2;
+      var az = z + Math.random() * d - d2;
+      var bx = x + Math.random() * d - d2;
+      var by = y + Math.random() * d - d2;
+      var bz = z + Math.random() * d - d2;
+      var cx = x + Math.random() * d - d2;
+      var cy = y + Math.random() * d - d2;
+      var cz = z + Math.random() * d - d2;
+      positions.push( ax, ay, az );
+      positions.push( bx, by, bz );
+      positions.push( cx, cy, cz );
+      // flat face normals
+      pA.set( ax, ay, az );
+      pB.set( bx, by, bz );
+      pC.set( cx, cy, cz );
+      cb.subVectors( pC, pB );
+      ab.subVectors( pA, pB );
+      cb.cross( ab );
+      cb.normalize();
+      var nx = cb.x;
+      var ny = cb.y;
+      var nz = cb.z;
+      normals.push( nx, ny, nz );
+      normals.push( nx, ny, nz );
+      normals.push( nx, ny, nz );
+      // colors
+      var vx = Math.sin(x/n);
+      var vy = Math.sin(y/n);
+      var vz = Math.sin(z/n);
+      color.setRGB( vx, vy, vz );
+      colors.push( color.r, color.g, color.b );
+      colors.push( color.r, color.g, color.b );
+      colors.push( color.r, color.g, color.b );
+    }
+    function disposeArray() { this.array = null; }
+    flameGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ).onUpload( disposeArray ) );
+    flameGeometry.addAttribute( 'normal', new THREE.Float32BufferAttribute( normals, 3 ).onUpload( disposeArray ) );
+    flameGeometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ).onUpload( disposeArray ) );
+    //geometry.addAttribute( 'size', new THREE.Float32BufferAttribute( sizes, 1 ).setDynamic( true ) );
+    //flame = new THREE.Points( flameGeometry, pointmaterial);
+    flame = new THREE.Mesh( flameGeometry, mashPhoneMatrial );
+    //flame = new THREE.Points( flameGeometry, shaderMaterial );
 
     // 4 Add shinny Particles
     var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     for (var k=0; k<5; k++){
       var shinDot = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      var length = Math.floor(Math.random() * flame.geometry.vertices.length); // Pick up a random dot to perform
-      shinDot.position.add(flame.geometry.vertices[length]);
+      var length = Math.floor(Math.random() * g.vertices.length); // Pick up a random dot to perform
+      shinDot.position.add(g.vertices[length]);
       flame.add(shinDot);
       shinDots.push(shinDot);
     }
@@ -117,7 +202,7 @@ function init() {
 
     // 9. Start Flamer rotation
     flameRotation();
-  }) // End of load backback
+  }) // End of load callback
 
   // 5. Add unreal bloom effect
   // https://threejs.org/examples/?q=unr#webgl_postprocessing_unreal_bloom

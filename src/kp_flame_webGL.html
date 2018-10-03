@@ -72,6 +72,31 @@
     <script src="js/postprocessing/UnrealBloomPass.js"></script>
     <script src="js/stats.min.js"></script>
     <script src="js/Tween.js"></script>
+    <!-- Custom shaders for particle effects -->
+    <script type="x-shader/x-vertex" id="vertexshader">
+      attribute float size;
+			varying vec3 vColor;
+			void main() {
+				vColor = color;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_PointSize = size * ( 300.0 / -mvPosition.z );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentshader">
+      uniform sampler2D texture;
+      uniform float opactiy;
+      uniform float r;
+      uniform float g;
+      uniform float b;
+
+      void main() {
+        gl_FragColor = vec4( 0.11, 0.5, 1 , opactiy );
+        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+      }
+    </script>
+    <!-- end of custom shaders -->
     <script src="kp_flame_webGL.js"></script>
 
 	</body>
