@@ -4,7 +4,7 @@
  */
 
 // Globle parameter
-// Todo: factory into object
+// TODO: factory into object
 var SCREEN_WIDTH = window.innerWidth,
   SCREEN_HEIGHT = window.innerHeight,
   mouseX = 0, mouseY = 0,
@@ -15,21 +15,37 @@ var SCREEN_WIDTH = window.innerWidth,
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,
-  rotateTweenL, rotateTweenR
+  rotateTweenL, rotateTweenR,
+  moveSpotlight
+
+  /*
+  * TODO: parameter for GUI panel remove in production
+  * */
+  var params = {
+    exposure: 1,
+    bloomStrength: 1.2,
+    bloomThreshold: 0.4,
+    bloomRadius: 0,
+    rotateY:0,
+  };
 
 init();
 animate();
 
-// Load once,
-// 1. Create scene.
-// 2. Create SpotLight
-// 3.1. JsonLoader load json data create by Blender
-// 3.2. Create Flame elements
-// 4. Create shinDots
-// 5. Add BloomEffect
-// 6. Add status indicator
-// 7. Define animation destination, defer cameraPositions
-// 8. Add Event Listener
+/*
+* Load once,
+* Warning! Do not change obj value while doing tween animation.
+* 1. Create scene.
+* 2. Create SpotLight
+* 3.1. JsonLoader load json data create by Blender
+* 3.2. Create Flame elements
+* 4. Create shinDots
+* 5. Define animation destination
+* 6. Start Flame rotation, Spotlight animation
+* 7. Add post processing effect
+* 8. Stats indicator
+* 9. Add Event Listener
+*/
 function init() {
   var container;
   container = document.getElementById('flame-container');
@@ -38,25 +54,22 @@ function init() {
   camera.position.z = 1000;
 
   // 1. Create scene
+  // TODO: create fog and scence stage?
   scene = new THREE.Scene();
-  scene.background = new THREE.Color("rgb(0,20,40)");
+  scene.background = new THREE.Color("rgb(0,45,95)");
 
   // 2. Create Spotlight https://threejs.org/docs/#api/en/lights/SpotLight
+  // TODO: Add more light
   spotLight = new THREE.SpotLight(0xffffff, 10);
-  spotLight.position.set(0, 0, 800);
+  spotLight.position.set(0, 0, 500);
   spotLight.angle = Math.PI / 4;
   spotLight.penumbra = 0.05;
   spotLight.decay = 2;
   spotLight.distance = 1000;
-  spotLight.castShadow = true;
-  spotLight.shadow.mapSize.width = 1024;
-  spotLight.shadow.mapSize.height = 1024;
-  spotLight.shadow.camera.near = 10;
-  spotLight.shadow.camera.far = 200;
   scene.add( spotLight );
 
   lightHelper = new THREE.SpotLightHelper(spotLight);
-  scene.add( lightHelper);
+  //scene.add( lightHelper);
 
   var ambientLight = new THREE.AmbientLight(0xffffff);
   scene.add(ambientLight);
@@ -68,63 +81,44 @@ function init() {
 
   // 3.1 Load Json data.
   // https://threejs.org/docs/#api/en/loaders/JSONLoader
-  // 3.2 Create flame element by PointsMaterial
-  // https://threejs.org/docs/#api/en/materials/PointsMaterial
   var loader = new THREE.JSONLoader();
-  uniforms = {
-    texture:   { value: new THREE.TextureLoader().load( "img/spark1.png" ) },
-    opactiy: {value: 1}
-  };
-  var shaderMaterial = new THREE.ShaderMaterial( {
-    uniforms:       uniforms,
-    vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-    fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-    blending:       THREE.AdditiveBlending,
-    depthTest:      false,
-    transparent:    true,
-    vertexColors:   true
-  });
 
   loader.load('./data/KPSM_flame.json', function (g, m) {
+    // Create 10 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg=g.clone()
-    for (var i = 0; i < 5; i++) {
-      g.merge(gg.clone().translate(0,0,-i*12));
+    for (var i = 0; i < 10; i++) {
+      var scaleSize=1-i*0.01;
+      g.merge(gg.clone().translate(0,0,-i*4).scale(scaleSize,scaleSize,scaleSize));
     }
 
-    // shaking the particiale
-    /*for (var j = 0; j < g.vertices.length; j++) {
-      g.vertices[j].x += Math.random() - 1;
-      g.vertices[j].y += Math.random() - 1;
-      g.vertices[j].z += Math.random() - 1;
-    }*/
-
-    // Create matrial
-    var pointmaterial = new THREE.PointsMaterial({ color: 0x4d83bb, size: 2 });
+    // Create material
+    // https://threejs.org/docs/index.html#api/en/materials/MeshPhongMaterial
+    // ## MeshPhongMaterial - A material for shiny surfaces with specular highlights.
     var mashPhoneMatrial = new THREE.MeshPhongMaterial( {
       color: 0xcccccc, specular: 0xffffff, shininess: 250,
       side: THREE.DoubleSide, vertexColors: THREE.VertexColors
     } );
-    // Create Flame scuplture;
 
+    // Create Flame scuplture - convert normal Geomertery into buffergeometry
+    // https://threejs.org/examples/?q=buffer#webgl_buffergeometry
     flameGeometry = new THREE.BufferGeometry();
     var positions = [];
     var normals = [];
     var colors = [];
     var color = new THREE.Color();
-    var n=500;
-    var d = 2, d2 = d / 2;	// individual triangle size
+    var d , d2;
     var pA = new THREE.Vector3();
     var pB = new THREE.Vector3();
     var pC = new THREE.Vector3();
     var cb = new THREE.Vector3();
     var ab = new THREE.Vector3();
-    //var triangles=flameGeometry.attributes.position.array.length;
     var triangles=g.vertices.length;
+    /* draw triangles base on the position of normal geometery */
     for ( var j = 0; j < triangles; j ++ ) {
-      d = Math.random()*3;
-      d2 = d / 2;	// individual triangle size
+      d = Math.random()*3; d2 = d / 2;	// individual triangle size
       // positions
+      // TODO: Create better triangle shape
       var x = g.vertices[j].x;
       var y = g.vertices[j].y;
       var z = g.vertices[j].z;
@@ -155,9 +149,10 @@ function init() {
       normals.push( nx, ny, nz );
       normals.push( nx, ny, nz );
       // colors
-      var vx = Math.sin(x/n);
-      var vy = Math.sin(y/n);
-      var vz = Math.sin(z/n);
+      // Todo: Adjust color and bloom param meter make it more pretty
+      var vx = 0.5+Math.random()*0.1;
+      var vy = 0.7+Math.random()*0.1;
+      var vz = 0.9+Math.random()*0.1;
       color.setRGB( vx, vy, vz );
       colors.push( color.r, color.g, color.b );
       colors.push( color.r, color.g, color.b );
@@ -167,12 +162,11 @@ function init() {
     flameGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ).onUpload( disposeArray ) );
     flameGeometry.addAttribute( 'normal', new THREE.Float32BufferAttribute( normals, 3 ).onUpload( disposeArray ) );
     flameGeometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ).onUpload( disposeArray ) );
-    //geometry.addAttribute( 'size', new THREE.Float32BufferAttribute( sizes, 1 ).setDynamic( true ) );
-    //flame = new THREE.Points( flameGeometry, pointmaterial);
-    flame = new THREE.Mesh( flameGeometry, mashPhoneMatrial );
-    //flame = new THREE.Points( flameGeometry, shaderMaterial );
 
-    // 4 Add shinny Particles
+    // Create flame element.
+    flame = new THREE.Mesh( flameGeometry, mashPhoneMatrial );
+
+    // 4. Add shinny Particles
     var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     for (var k=0; k<5; k++){
@@ -184,14 +178,16 @@ function init() {
     }
 
     // Adjust flame position
+    // TODO: Conside responsive design
     flame.position.z = i * 12;
     flame.position.y = 0;
     flame.position.x = windowHalfX / 2 - 100;
+    flame.rotateY(-0.1);
     flame.scale.multiplyScalar(1.8);
 
     scene.add(flame);
 
-    // Add CamearPosition Query
+    // 5. Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(flame.position.x, 0, 1000));
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
@@ -200,30 +196,59 @@ function init() {
         200));
     }
 
-    // 9. Start Flamer rotation
+    // 6. Start Flame rotation, Spotlight animation
     flameRotation();
+    moveSpotlight = animateVector3(spotLight.position, new THREE.Vector3(1000,500,200),{ duration: 5000 })
   }) // End of load callback
 
-  // 5. Add unreal bloom effect
+  // 7. Add post processing effect:
+  // 7.1 Add unreal bloom effect
   // https://threejs.org/examples/?q=unr#webgl_postprocessing_unreal_bloom
   var renderScene = new THREE.RenderPass(scene, camera);
   var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.renderToScreen = true;
-  bloomPass.threshold = 0
-  bloomPass.strength = 0.5
-  bloomPass.radius = 0.05
+  bloomPass.threshold = params.bloomThreshold;
+  bloomPass.strength = params.bloomStrength;
+  bloomPass.radius = params.bloomRadius;
+
+  // Add effctFocus
+  // https://threejs.org/examples/#webgl_points_dynamic
+  var effectFocus = new THREE.ShaderPass( THREE.FocusShader );
+  effectFocus.uniforms[ "screenWidth" ].value = window.innerWidth;
+  effectFocus.uniforms[ "screenHeight" ].value = window.innerHeight;
+	effectFocus.renderToScreen = true;
+
   composer = new THREE.EffectComposer(renderer);
   composer.setSize(window.innerWidth, window.innerHeight);
   composer.addPass(renderScene);
+  // FIXME: Can't add two compose
   composer.addPass(bloomPass);
+  //composer.addPass(effectFocus);
 
-  // 6. Add Stats indicator
+  // 8. Add Stats indicator
+  // TODO: remove in real products
   stats = new Stats();
   container.appendChild(stats.dom);
 
-  // 7. Define animation destination, defer cameraPositions
+  var gui = new dat.GUI();
+  gui.add( params, 'exposure', 0.1, 2 ).onChange( function ( value ) {
+    renderer.toneMappingExposure = Math.pow( value, 4.0 );
+  } );
+  gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( function ( value ) {
+    bloomPass.threshold = Number( value );
+  } );
+  gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( function ( value ) {
+    bloomPass.strength = Number( value );
+  } );
+  gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+    bloomPass.radius = Number( value );
+  } );
+  gui.add( params, 'rotateY', -1.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+    flame.rotation.y = Number( value );
+  } );
 
-  // 8. Add EventListener
+
+  // 9. Add EventListener
   addMouseEvents();
   window.addEventListener('resize', onWindowResize, false);
   document.getElementById('imemerse').addEventListener('click', function (e) {
@@ -239,53 +264,34 @@ function animate() {
 }
 
 function render() {
-  controller();
-  //camera.position.x += (mouseX - camera.position.x) * 0.01;
-  //camera.position.y += (-mouseY - camera.position.y) * 0.01;
-  //camera.lookAt(scene.position);
   renderer.render(scene, camera);
-  composer.render();
-}
-function controller() {
-  document.getElementById("camera_position").innerHTML = "{" + camera.position.x + "," + camera.position.y + "," + camera.position.z + "}";
+  composer.render(0.01);
 }
 
-// https://medium.com/@lachlantweedie/animation-in-three-js-using-tween-js-with-examples-c598a19b1263
-function animateVector3(vectorToAnimate, target, options) {
-  options = options || {};
-  // get targets from options or set to defaults
-  var to = target || THREE.Vector3(),
-    easing = options.easing || TWEEN.Easing.Quadratic.In,
-    duration = options.duration || 2000;
-  // create the tween
-  var tweenVector3 = new TWEEN.Tween(vectorToAnimate)
-    .to({ x: to.x, y: to.y, z: to.z }, duration)
-    .easing(easing)
-    .onUpdate(function (d) {
-      if (options.update) {
-        options.update(d);
-      }
-    })
-    .onComplete(function () {
-      if (options.callback) options.callback();
-    });
-  // start the tween
-  tweenVector3.start();
-  // return the tween in case we want to manipulate it later on
-  return tweenVector3;
-}
 function flameRotation() {
   if (!rotateTweenL && !rotateTweenR) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
-      .to({ y: 0.1 }, 2000)
+      .to({ y: 0 }, 4000)
       .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenR = new TWEEN.Tween(flame.rotation)
-      .to({ y: -0.1 }, 2000)
+      .to({ y: -0.2}, 4000)
       .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
   }
   rotateTweenL.start();
+}
+function moveCamera() {
+  rotateTweenL.stop();
+  rotateTweenR.stop();
+  animateVector3(camera.position, cameraPositions[cameraInter], {
+    duration: 1000,
+    easing: TWEEN.Easing.Quadratic.InOut,
+    update: function (d) {},
+    callback: function () {
+      cameraInter++;
+    }
+  })
 }
 
 function addMouseEvents() {
@@ -299,19 +305,6 @@ function removeMouseEvents() {
   document.removeEventListener('touchstart', onDocumentTouchStart, false);
   document.removeEventListener('touchmove', onDocumentTouchMove, false);
   document.removeEventListener('wheel', onDocumentMouseScroll, false);
-}
-function moveCamera() {
-  rotateTweenL.stop();
-  rotateTweenR.stop();
-  animateVector3(camera.position, cameraPositions[cameraInter], {
-    duration: 1000,
-    easing: TWEEN.Easing.Quadratic.InOut,
-    update: function (d) {},
-    callback: function () {
-      cameraInter++;
-    }
-  })
-  // }
 }
 
 function onWindowResize() {
@@ -352,4 +345,33 @@ function onDocumentMouseScroll(event) {
   } else {
     camera.position.z -= 10 // (1000 - camera.position.y)*event.deltaY*0.05;
   }
+}
+
+/*
+ * Animates a Vector3 to the target
+ * animateVector3 (objToMove:Vector3, target:Vector3, options{easing:,duration:,onUpdate:,onComplete} )
+ * https://medium.com/@lachlantweedie/animation-in-three-js-using-tween-js-with-examples-c598a19b1263
+*/
+function animateVector3(vectorToAnimate, target, options) {
+  options = options || {};
+  // get targets from options or set to defaults
+  var to = target || THREE.Vector3(),
+    easing = options.easing || TWEEN.Easing.Quadratic.In,
+    duration = options.duration || 2000;
+  // create the tween
+  var tweenVector3 = new TWEEN.Tween(vectorToAnimate)
+    .to({ x: to.x, y: to.y, z: to.z }, duration)
+    .easing(easing)
+    .onUpdate(function (d) {
+      if (options.update) {
+        options.update(d);
+      }
+    })
+    .onComplete(function () {
+      if (options.callback) options.callback();
+    });
+  // start the tween
+  tweenVector3.start();
+  // return the tween in case we want to manipulate it later on
+  return tweenVector3;
 }

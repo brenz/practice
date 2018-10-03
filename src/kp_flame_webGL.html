@@ -54,49 +54,22 @@
 
     <div id="flame-container"></div>
 
-    <div class="console">
-      <div>Camera Position: <span id="camera_position"></span></div>
-      <div>Flame Position: <span id="flame_position"></span></div>
-    </div>
-
 
 <!-- Todo: Going to refactroy and load Three.js with package -->
     <script src="js/three.js"></script>
-    <script src="js/renderers/Projector.js"></script>
-    <script src="js/renderers/CanvasRenderer.js"></script>
+
+    <script src="js/shaders/CopyShader.js"></script>
+    <script src="js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="js/shaders/FocusShader.js"></script>
+
     <script src="js/postprocessing/EffectComposer.js"></script>
     <script src="js/postprocessing/RenderPass.js"></script>
     <script src="js/postprocessing/ShaderPass.js"></script>
-    <script src="js/shaders/CopyShader.js"></script>
-    <script src="js/shaders/LuminosityHighPassShader.js"></script>
     <script src="js/postprocessing/UnrealBloomPass.js"></script>
+
     <script src="js/stats.min.js"></script>
+    <script src='js/dat.gui.min.js'></script>
     <script src="js/Tween.js"></script>
-    <!-- Custom shaders for particle effects -->
-    <script type="x-shader/x-vertex" id="vertexshader">
-      attribute float size;
-			varying vec3 vColor;
-			void main() {
-				vColor = color;
-				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-				gl_PointSize = size * ( 300.0 / -mvPosition.z );
-				gl_Position = projectionMatrix * mvPosition;
-			}
-    </script>
-
-    <script type="x-shader/x-fragment" id="fragmentshader">
-      uniform sampler2D texture;
-      uniform float opactiy;
-      uniform float r;
-      uniform float g;
-      uniform float b;
-
-      void main() {
-        gl_FragColor = vec4( 0.11, 0.5, 1 , opactiy );
-        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-      }
-    </script>
-    <!-- end of custom shaders -->
     <script src="kp_flame_webGL.js"></script>
 
 	</body>
