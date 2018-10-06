@@ -10,27 +10,35 @@ var SCREEN_WIDTH = window.innerWidth,
   mouseX = 0, mouseY = 0,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
-  camera, scene, renderer, composer, spotLight, lightHelper, stats,
+  camera, scene, renderer, composer, lightHelper, stats,
+  spotLight, spotLights = [],
   flame,flameGeometry,
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,
-  rotateTweenL, rotateTweenR,
-  moveSpotlight
+  rotateTweenL, rotateTweenR
 
-  /*
-  * TODO: parameter for GUI panel remove in production
-  * */
-  var params = {
-    exposure: 1,
-    bloomStrength: 1.2,
-    bloomThreshold: 0.4,
-    bloomRadius: 0,
-    rotateY:0,
-  };
+/*
+* TODO: parameter for GUI panel remove in production
+*/
+var params = {
+  exposure: 1,
+  bloomStrength: 1.2,
+  bloomThreshold: 0.4,
+  bloomRadius: 0,
+  rotateY:0,
+};
 
-init();
-animate();
+if ( WEBGL.isWebGLAvailable() === true){
+  // User can have full exprience with WebGl, go to WEBGL init()
+  init();
+  animate();
+}
+else {
+  // go with low bandwidth option;
+  document.getElementById('flame-container').appendChild( WEBGL.getWebGLErrorMessage() );
+}
+
 
 /*
 * Load once,
@@ -60,16 +68,21 @@ function init() {
 
   // 2. Create Spotlight https://threejs.org/docs/#api/en/lights/SpotLight
   // TODO: Add more light
-  spotLight = new THREE.SpotLight(0xffffff, 10);
-  spotLight.position.set(0, 0, 500);
-  spotLight.angle = Math.PI / 4;
-  spotLight.penumbra = 0.05;
-  spotLight.decay = 2;
-  spotLight.distance = 1000;
-  scene.add( spotLight );
+  for (var i=0;i<1;i++){
+    spotLight = new THREE.SpotLight(0xffffff, 10);
+    spotLight.position.set(0,0, 500);
+    spotLight.angle = Math.PI / 4;
+    spotLight.penumbra = 0.05;
+    spotLight.decay = 2;
+    spotLight.distance = 1000;
+    spotLights.push(spotLight);
+    scene.add( spotLight );
 
-  lightHelper = new THREE.SpotLightHelper(spotLight);
-  //scene.add( lightHelper);
+    //lightHelper = new THREE.SpotLightHelper(spotLight);
+    //scene.add( lightHelper);
+  }
+
+
 
   var ambientLight = new THREE.AmbientLight(0xffffff);
   scene.add(ambientLight);
@@ -105,20 +118,16 @@ function init() {
     flameGeometry = new THREE.BufferGeometry();
     var positions = [];
     var normals = [];
-    var colors = [];
-    var color = new THREE.Color();
+    var colors = [], color = new THREE.Color();
     var d , d2;
-    var pA = new THREE.Vector3();
-    var pB = new THREE.Vector3();
-    var pC = new THREE.Vector3();
-    var cb = new THREE.Vector3();
-    var ab = new THREE.Vector3();
+    var pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3(),
+        cb = new THREE.Vector3(), ab = new THREE.Vector3();
     var triangles=g.vertices.length;
     /* draw triangles base on the position of normal geometery */
     for ( var j = 0; j < triangles; j ++ ) {
       d = Math.random()*3; d2 = d / 2;	// individual triangle size
       // positions
-      // TODO: Create better triangle shape
+      // TODO: Create better triangle shape or round dot
       var x = g.vertices[j].x;
       var y = g.vertices[j].y;
       var z = g.vertices[j].z;
@@ -180,7 +189,7 @@ function init() {
     // Adjust flame position
     // TODO: Conside responsive design
     flame.position.z = i * 12;
-    flame.position.y = 0;
+    flame.position.y = -50;
     flame.position.x = windowHalfX / 2 - 100;
     flame.rotateY(-0.1);
     flame.scale.multiplyScalar(1.8);
@@ -193,12 +202,15 @@ function init() {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x + flame.position.x,
         shinDots[i].position.y,
-        200));
+        300));
     }
 
     // 6. Start Flame rotation, Spotlight animation
     flameRotation();
-    moveSpotlight = animateVector3(spotLight.position, new THREE.Vector3(1000,500,200),{ duration: 5000 })
+    for(var i=0;i<spotLights.length;i++){
+      tweenlight(spotLights[i]);
+    }
+
   }) // End of load callback
 
   // 7. Add post processing effect:
@@ -226,10 +238,12 @@ function init() {
   //composer.addPass(effectFocus);
 
   // 8. Add Stats indicator
-  // TODO: remove in real products
+  // TODO: remove stats indicator in real products
   stats = new Stats();
   container.appendChild(stats.dom);
 
+  // GUI control
+  // TODO: Remove GUI control in real products
   var gui = new dat.GUI();
   gui.add( params, 'exposure', 0.1, 2 ).onChange( function ( value ) {
     renderer.toneMappingExposure = Math.pow( value, 4.0 );
@@ -374,4 +388,17 @@ function animateVector3(vectorToAnimate, target, options) {
   tweenVector3.start();
   // return the tween in case we want to manipulate it later on
   return tweenVector3;
+}
+
+function tweenlight( light ) {
+  new TWEEN.Tween( light.position ).to( {
+    x: ( Math.random() * 1000 ) + 500,
+    y: ( Math.random() * 2000 ) - 1000,
+    z: ( Math.random() * 300 ) - 150
+  }, 5000 )
+  .easing( TWEEN.Easing.Quadratic.Out )
+  .onComplete(function (){
+    tweenlight(light)
+  })
+  .start();
 }
