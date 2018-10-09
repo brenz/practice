@@ -354,48 +354,22 @@ function unify(e) {
   return e.changedTouches ? e.changedTouches[0] : e
 }
 function touchLock(e) {
-  console.log("in start");
-  x0 = unify(e).clientX
+  e.preventDefault();
 }
 function touchMove(e) {
-  console.log("in move");
-  if (x0 || x0 === 0) {
-    var dx = unify(e).clientX - x0;
-    var s = Math.sign(dx);
-    console.log(dx);
-    console.log(s);
-    if (moveCameraTween !== undefined && moveCameraTween.isPlaying()) { return 0 }
-    if ((cameraInter > 0 || s < 0) && (cameraInter < cameraPositions.length - 1 || s > 0)){
-      cameraInter += s;
-      moveCamera(cameraInter);
-      scrollPage(cameraInter);
-    }
-  }
+  e.preventDefault();
 }
 
 
 function onDocumentMouseScroll(event) {
-  //event.preventDefault();
-  var top = body.scrollTop;
-  console.log(top);
-
-  if (moveCameraTween !== undefined && moveCameraTween.isPlaying()) { return 0 }
-  var dx = event.deltaY;
-  var s =  Math.sign(dx);
-  //console.log(dx);
-  console.log(top);
-  if (moveCameraTween !== undefined && moveCameraTween.isPlaying()) { return 0 }
-  /*if ((cameraInter > 1 || s < 0) && (cameraInter < cameraPositions.length - 1 || s > 0)){
-    cameraInter += s;
-    moveCamera(cameraInter);
-    scrollPage(cameraInter);
-  }*/
+  event.preventDefault();
 }
 function onbodyScroll(event){
   event.preventDefault();
   var top = body.scrollTop;
   var dx =  top - scroll0;
   var s =  Math.sign(dx);
+  scroll0=top;
   console.log("dx:"+dx);
   console.log("top:"+top);
   if (moveCameraTween !== undefined && moveCameraTween.isPlaying()) { return 0 }
@@ -404,8 +378,6 @@ function onbodyScroll(event){
     moveCamera(cameraInter);
     scrollPage(cameraInter);
   }
-
-
 }
 
 function scrollPage(i) {
