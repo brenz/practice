@@ -1,32 +1,76 @@
-
-body {
-  background-color: #00305B;
+html{
+  height: 100vh;
+  overflow-x: hidden;
+}
+.homepage {
+  background-color: #00305b;
   margin: 0px;
-  overflow: hidden;
-  font-family: 'Gotham', 'Verdana', 'Avenir';
-}
+  overflow-x: hidden;
+  font-family: 'Gotham Bold', 'Verdana', 'Avenir';
+  font-size:100%;
+  height:100vh;
 
-a {
-  color:#0078ff;
-}
+  section {
+    height: calc(100vh) ;
+    width: 100%;
+    padding: 4em;
+    align-items: center;
+    transition: transform 1s ease-out;
 
-section.intro {
-  width:100%;
-  position: absolute;
-  top:0px;
-  left:0px;
-  height:calc(100vh);
-  padding:0px 20rem;
-}
-h1{
-  color:white;
-  font-size: 3rem;
-}
-button{
-  background:transparent;
-  border:1.6px solid white;
-  padding:0.5rem 1rem;
-  color:white;
-  font-size: 1rem;
-  border-radius: 2rem;
+    h1 {
+      color: white;
+      font-size: 3rem;
+    }
+
+
+
+    &:nth-of-type(1){
+      h1 {
+        margin-top: 16rem;
+      }
+      @media only screen and (max-width: 375px){
+        h1{
+          margin-top:3.5rem;
+          font-size:2.85rem;
+        }
+      }
+    }
+    /* Section 1 */
+    &:nth-of-type(2){
+      background-color:rgba($color: #cff, $alpha: 0.5);
+    }
+    /* Section 2 */
+    &:nth-of-type(3){
+      background-color:rgba($color: #fcf, $alpha: 0.5);
+    }
+    &:nth-of-type(4){
+      background-color:rgba($color: #ffc, $alpha: 0.5);
+    }
+    &:nth-of-type(5){
+      background-color:rgba($color: #cfc, $alpha: 0.5);
+    }
+  }
+  #flame-container{
+    position: fixed;
+    top:0;
+    left:0;
+    z-index: -1000;
+  }
+
+  button {
+    background: transparent;
+    border: 1.6px solid white;
+    padding: 0.5rem 1rem;
+    color: white;
+    font-size: 1rem;
+    border-radius: 2rem;
+  }
+
+  .console {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    color: white;
+  }
+
 }

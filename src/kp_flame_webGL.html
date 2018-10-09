@@ -4,13 +4,15 @@
 		<title>three.js kp-flame with WebGl</title>
 		<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="style/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="../node_modules/sal.js/dist/sal.css">
+    <link rel="stylesheet" type="text/css" href="style/main.css">
 
 	</head>
 	<body class="homepage">
     <section class="intro row align-items-center">
       <div class="col-md-6 offset-md-2">
-        <h1 >Where does your<br/>journey begin</h1>
+        <h1  data-sal="slide-up" data-sal-delay="300" data-sal-easing="ease-out-bounce" >Where does your<br/>journey begin</h1>
         <button id="imemerse">Immerse yourself →</button>
       </div>
     </section>
@@ -53,6 +55,7 @@
     </section>
 
     <div id="flame-container"></div>
+    <div class="console" id="console">ssss</div>
 
 
 <!-- Todo: Going to refactroy and load Three.js with package -->
@@ -72,6 +75,13 @@
     <script src='js/dat.gui.min.js'></script>
     <script src="js/Tween.js"></script>
     <script src="kp_flame_webGL.js"></script>
+
+    <script src="../node_modules/sal.js/dist/sal.js"></script>
+    <script>
+      sal({
+        once:false
+      });
+    </script>
 
 	</body>
 </html>
