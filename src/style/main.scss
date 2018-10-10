@@ -1,6 +1,5 @@
 html{
   height: 100vh;
-  overflow-x: hidden;
 }
 .homepage {
   background-color: #00305b;
@@ -13,41 +12,98 @@ html{
   section {
     height: calc(100vh) ;
     width: 100%;
-    padding: 4em;
     align-items: center;
-    transition: transform 1s ease-out;
+    transition: all 1s ease-out;
+    opacity: 0;
+
+    &.fade-in {
+      opacity: 1;
+    }
 
     h1 {
       color: white;
       font-size: 3rem;
+      transition: all 1s ease-out;
+    }
+    button {
+      transition: all 1s ease-out;
+    }
+    h2 {
+      color: white;
+      transform: translateY(50px);
+      transition: all 1s ease-out;
+    }
+    p {
+      color: white;
+      transform: translateY(50px);
+      transition: all 1s ease-out;
+    }
+    img {
+      width:10px;
+      height:10px;
+      transition: all 1s ease-out;
+      border-top-left-radius: 0;
+      border-top-right-radius: 50%;
+      border-bottom-right-radius: 50%;
+      border-bottom-left-radius: 0;
+    }
+    &.fade-in {
+      h2{
+        transform: translateY(0);
+      }
+      p{
+        transform: translateY(0);
+      }
+      img{
+        height:calc(100vh);
+        width:100%;
+      }
     }
 
-
-
+    /* Section intro */
     &:nth-of-type(1){
+      opacity: 1;
       h1 {
-        margin-top: 16rem;
+        margin-top:16rem;
+        transform: translateY(0);
+      }
+      button{
+        transform: translate(0);
+      }
+      &.fade-out{
+        h1 {
+          transform: translateY(50px);
+        }
+        button{
+          transform: translateY(50px);
+        }
       }
       @media only screen and (max-width: 375px){
         h1{
-          margin-top:3.5rem;
+          margin-top: 3.25rem;
+          transform: translateY(0);
           font-size:2.85rem;
         }
+      }
+      &.fade-out{
+        opacity: 0;
       }
     }
     /* Section 1 */
     &:nth-of-type(2){
-      background-color:rgba($color: #cff, $alpha: 0.5);
+      background-color:rgba($color: #333, $alpha: 0.3);
     }
     /* Section 2 */
     &:nth-of-type(3){
-      background-color:rgba($color: #fcf, $alpha: 0.5);
+      background-color:rgba($color: #333, $alpha: 0.5);
     }
+    /* Section 3 */
     &:nth-of-type(4){
-      background-color:rgba($color: #ffc, $alpha: 0.5);
+      background-color:rgba($color: #333, $alpha: 0.5);
     }
+    /* Section 4 */
     &:nth-of-type(5){
-      background-color:rgba($color: #cfc, $alpha: 0.5);
+      background-color:rgba($color: #333, $alpha: 0.5);
     }
   }
   #flame-container{
@@ -71,6 +127,9 @@ html{
     top: 50px;
     left: 0;
     color: white;
+  }
+  .space{
+    min-height:1px;
   }
 
 }
