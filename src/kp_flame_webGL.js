@@ -18,9 +18,7 @@ var SCREEN_WIDTH = window.innerWidth,
   cameraPositions = [],
   cameraInter = 0,
   rotateTweenL, rotateTweenR, moveCameraTween,
-  body = document.body,
-  x0 = null,
-  scroll0 = 0
+  scrollProgress = 0
 
 /*
 * TODO: parameter for GUI panel remove in production
@@ -275,9 +273,45 @@ function init() {
   // 9. Add EventListener
   addMouseEvents();
   window.addEventListener('resize', onWindowResize, false);
-  document.getElementById('imemerse').addEventListener('click', function (e) {
-    moveCamera();
+
+  //10. Add scroll effect
+  var controller = new ScrollMagic.Controller();
+
+  // get all slides
+  var slides = document.querySelectorAll("section");
+
+  // Create Scene from Section intro
+  new ScrollMagic.Scene({
+    triggerElement: "#section0",
+    duration: windowHalfY -11,//SCREEN_HEIGHT,
+    offset: windowHalfY+10,
   })
+    .setClassToggle("#section0", "fade-out")
+    .on('progress', function (e) {
+      cameraInter = 0
+      //console.log("Scroll on intro in progress:"+e.progress)
+      scrollProgress=e.progress;
+    })
+    //.addIndicators({}) // add indicators (requires plugin)
+    .addTo(controller);
+
+  // create scene from 1st slide
+  for (var l = 1; l < slides.length; l++) {
+    new ScrollMagic.Scene({
+      triggerElement: "#section" + l,
+      duration: window.innerHeight - 100,
+    })
+      .setClassToggle("#section" + l, "fade-in")
+      .on('progress', function (e) {
+        cameraInter = Math.floor((window.pageYOffset+windowHalfY+10)/SCREEN_HEIGHT);
+        console.log("Scroll on intro in progress:"+e)
+
+        scrollProgress=e.progress;
+      })
+      //.addIndicators() // add indicators (requires plugin)
+      .addTo(controller);
+  }
+
 }
 
 function animate(time) {
@@ -288,6 +322,12 @@ function animate(time) {
 }
 
 function render() {
+  if(cameraPositions[cameraInter+1] !== undefined && scrollProgress < 1){
+      camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter+1].x-cameraPositions[cameraInter].x)*scrollProgress;
+      camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter+1].y-cameraPositions[cameraInter].y)*scrollProgress;
+      camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter+1].z-cameraPositions[cameraInter].z)*scrollProgress;
+
+  }
   renderer.render(scene, camera);
   composer.render(0.01);
 }
@@ -307,7 +347,7 @@ function flameRotation() {
 }
 
 function moveCamera(i) {
-  document.getElementById("console").innerHTML = "Current Story // CameraInter:" + i;
+  //document.getElementById("console").innerHTML = "Current Story // CameraInter:" + i;
   rotateTweenL.stop();
   rotateTweenR.stop();
   if (i === undefined) {
@@ -324,65 +364,20 @@ function moveCamera(i) {
 function addMouseEvents() {
   //document.addEventListener('mousemove', onDocumentMouseMove, false);
   //document.addEventListener('wheel', onDocumentMouseScroll, false);
-  body.addEventListener("scroll", onbodyScroll, false);
-
+  //body.addEventListener("scroll", onbodyScroll, false);
   //document.addEventListener('touchstart', touchLock, false);
   //document.addEventListener('mousedown', touchLock, false);
   //document.addEventListener('mouseup', touchMove, false);
   //document.addEventListener('touchend', touchMove, false);
 }
-function removeMouseEvents() {
-  document.removeEventListener('mousemove', onDocumentMouseMove, false);
-  document.removeEventListener('touchstart', onDocumentTouchStart, false);
-  document.removeEventListener('touchmove', onDocumentTouchMove, false);
-  document.removeEventListener('wheel', onDocumentMouseScroll, false);
-}
 
 function onWindowResize() {
   windowHalfX = window.innerWidth / 2;
   windowHalfY = window.innerHeight / 2;
-
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
-function onDocumentMouseMove(event) {
-}
-function unify(e) {
-  return e.changedTouches ? e.changedTouches[0] : e
-}
-function touchLock(e) {
-  e.preventDefault();
-}
-function touchMove(e) {
-  e.preventDefault();
-}
-
-
-function onDocumentMouseScroll(event) {
-  event.preventDefault();
-}
-function onbodyScroll(event){
-  event.preventDefault();
-  var top = body.scrollTop;
-  var dx =  top - scroll0;
-  var s =  Math.sign(dx);
-  scroll0=top;
-  console.log("dx:"+dx);
-  console.log("top:"+top);
-  if (moveCameraTween !== undefined && moveCameraTween.isPlaying()) { return 0 }
-  if ((cameraInter >= 0 || s < 0) && (cameraInter < cameraPositions.length || s > 0)){
-    cameraInter += s;
-    moveCamera(cameraInter);
-    scrollPage(cameraInter);
-  }
-}
-
-function scrollPage(i) {
-  body.scrollTop = SCREEN_HEIGHT * i;
-};
 
 /*
  * Animates a Vector3 to the target
