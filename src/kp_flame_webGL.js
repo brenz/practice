@@ -103,7 +103,7 @@ function init() {
     // Create 10 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg = g.clone()
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 1; i++) {
       var scaleSize = 1 - i * 0.01;
       g.merge(gg.clone().translate(0, 0, -i * 4).scale(scaleSize, scaleSize, scaleSize));
     }
@@ -111,72 +111,23 @@ function init() {
     // Create material
     // https://threejs.org/docs/index.html#api/en/materials/MeshPhongMaterial
     // ## MeshPhongMaterial - A material for shiny surfaces with specular highlights.
-    var mashPhoneMatrial = new THREE.MeshPhongMaterial({
-      color: 0xcccccc, specular: 0xffffff, shininess: 250,
-      side: THREE.DoubleSide, vertexColors: THREE.VertexColors
-    });
 
-    // Create Flame scuplture - convert normal Geomertery into buffergeometry
-    // https://threejs.org/examples/?q=buffer#webgl_buffergeometry
-    flameGeometry = new THREE.BufferGeometry();
-    var positions = [];
-    var normals = [];
-    var colors = [], color = new THREE.Color();
-    var d, d2;
-    var pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3(),
-      cb = new THREE.Vector3(), ab = new THREE.Vector3();
-    var triangles = g.vertices.length;
-    /* draw triangles base on the position of normal geometery */
-    for (var j = 0; j < triangles; j++) {
-      d = 2; d2 = d / 2;	// individual triangle size
-      // positions
-      // TODO: Create better triangle shape or round dot
-      var x = g.vertices[j].x;
-      var y = g.vertices[j].y;
-      var z = g.vertices[j].z;
-      var ax = x + Math.random() * d - d2;
-      var ay = y + Math.random() * d - d2;
-      var az = z + Math.random() * d - d2;
-      var bx = x + Math.random() * d - d2;
-      var by = y + Math.random() * d - d2;
-      var bz = z + Math.random() * d - d2;
-      var cx = x + Math.random() * d - d2;
-      var cy = y + Math.random() * d - d2;
-      var cz = z + Math.random() * d - d2;
-      positions.push(ax, ay, az);
-      positions.push(bx, by, bz);
-      positions.push(cx, cy, cz);
-      // flat face normals
-      pA.set(ax, ay, az);
-      pB.set(bx, by, bz);
-      pC.set(cx, cy, cz);
-      cb.subVectors(pC, pB);
-      ab.subVectors(pA, pB);
-      cb.cross(ab);
-      cb.normalize();
-      var nx = cb.x;
-      var ny = cb.y;
-      var nz = cb.z;
-      normals.push(nx, ny, nz);
-      normals.push(nx, ny, nz);
-      normals.push(nx, ny, nz);
-      // colors
-      // Todo: Adjust color and bloom param meter make it more pretty
-      var vx = 0.5 + Math.random() * 0.1;
-      var vy = 0.7 + Math.random() * 0.1;
-      var vz = 0.9 + Math.random() * 0.1;
-      color.setRGB(vx, vy, vz);
-      colors.push(color.r, color.g, color.b);
-      colors.push(color.r, color.g, color.b);
-      colors.push(color.r, color.g, color.b);
+    var spriteMap = new THREE.TextureLoader().load( "img/spark1.png" );
+    flame = new THREE.Points();
+
+    var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+    for (var j=0; j< g.vertices.length; j=j+5) {
+      var gv = g.vertices[j];
+      var sprite = new THREE.Sprite( spriteMaterial );
+      sprite.position.normalize();
+      sprite.position.add( gv);
+      sprite.position.multiplyScalar( 1 );
+      sprite.scale=new THREE.Vector3(100,100,100);
+			flame.add( sprite );
     }
-    function disposeArray() { this.array = null; }
-    flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3).onUpload(disposeArray));
-    flameGeometry.addAttribute('normal', new THREE.Float32BufferAttribute(normals, 3).onUpload(disposeArray));
-    flameGeometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3).onUpload(disposeArray));
 
     // Create flame element.
-    flame = new THREE.Mesh(flameGeometry, mashPhoneMatrial);
+
 
     // 4. Add shinny Particles
     var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
@@ -211,10 +162,10 @@ function init() {
     }
 
     // 6. Start Flame rotation, Spotlight animation
-    flameRotation();
-    for (var i = 0; i < spotLights.length; i++) {
+    //flameRotation();
+    /*for (var i = 0; i < spotLights.length; i++) {
       tweenlight(spotLights[i]);
-    }
+    }*/
 
   }) // End of load callback
 
@@ -326,10 +277,9 @@ function render() {
       camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter+1].x-cameraPositions[cameraInter].x)*scrollProgress;
       camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter+1].y-cameraPositions[cameraInter].y)*scrollProgress;
       camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter+1].z-cameraPositions[cameraInter].z)*scrollProgress;
-
   }
   renderer.render(scene, camera);
-  composer.render(0.01);
+  composer.render();
 }
 
 function flameRotation() {
