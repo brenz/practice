@@ -10,7 +10,7 @@ var SCREEN_WIDTH = window.innerWidth,
   mouseX = 0, mouseY = 0,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
-  camera, scene, renderer, composer, lightHelper, stats,
+  camera, scene, renderer, composer, stats,
   flame, flameGeometry,
   shinDots = [],
   cameraPositions = [],
@@ -26,9 +26,9 @@ var SCREEN_WIDTH = window.innerWidth,
 var params = {
   color: [255, 255, 255],
   exposure: 1,
-  bloomStrength: 1.8,
-  bloomThreshold: 0.25,
-  bloomRadius: 0.7,
+  bloomStrength: 1.6,
+  bloomThreshold: 0.3,
+  bloomRadius: 0.55,
   rotateY: 0,
 };
 
@@ -65,6 +65,7 @@ function init() {
 
   camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
   camera.position.z = 1000;
+
 
   // 1. Create scene
   // TODO: create fog and scence stage?
@@ -143,22 +144,22 @@ function init() {
 
     // Adjust flame position
     // TODO: Conside responsive design
-    flame.position.z = 0;
-    flame.position.y = -60;
-    flame.position.x = windowHalfX / 2 - 100;
     flame.rotateY(-0.1);
     flame.scale.multiplyScalar(2);
 
     scene.add(flame);
 
     // 5. Define animation destination, defer cameraPositions
-    cameraPositions.push(new THREE.Vector3(0, 0, 1000));
+    cameraPositions.push(new THREE.Vector3(
+      -windowHalfX / 2 + 100,
+      60,
+      1000));
     //cameraPositions.push(new THREE.Vector3(flame.position.x, 0, 1000));
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x + flame.position.x,
         shinDots[i].position.y,
-        250));
+        200));
     }
 
     // 6. Start Flame rotation
@@ -292,10 +293,10 @@ function render() {
 function flameRotation() {
   if (!rotateTweenL && !rotateTweenR) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
-      .to({ y: 0 }, 4000)
+      .to({ y: 0.1 }, 10000)
       .easing(TWEEN.Easing.Linear.None)
     rotateTweenR = new TWEEN.Tween(flame.rotation)
-      .to({ y: -0.2 }, 4000)
+      .to({ y: -0.3 }, 10000)
       .easing(TWEEN.Easing.Linear.None)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
