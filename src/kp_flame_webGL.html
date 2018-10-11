@@ -70,7 +70,6 @@
   <!-- Todo: Going to refactroy and load Three.js with package -->
   <script src="js/three.js"></script>
   <script src="js/WebGL.js"></script>
-
   <script src="js/shaders/CopyShader.js"></script>
   <script src="js/shaders/LuminosityHighPassShader.js"></script>
   <script src="js/shaders/FocusShader.js"></script>
@@ -79,13 +78,34 @@
   <script src="js/postprocessing/RenderPass.js"></script>
   <script src="js/postprocessing/ShaderPass.js"></script>
   <script src="js/postprocessing/UnrealBloomPass.js"></script>
-
   <script src="js/stats.min.js"></script>
   <script src='js/dat.gui.min.js'></script>
   <script src="js/Tween.js"></script>
 
   <script src="js/scrollmagic/ScrollMagic.js"></script>
   <script src="js/scrollmagic/plugins/debug.addIndicators.js"></script>
+
+  <script type="x-shader/x-vertex" id="vertexshader">
+    attribute float size;
+    varying vec3 vColor;
+    void main() {
+      vColor = color;
+      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+      gl_PointSize = size * ( 300.0 / -mvPosition.z );
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  </script>
+
+  <script type="x-shader/x-fragment" id="fragmentshader">
+    uniform sampler2D texture;
+    varying vec3 vColor;
+    void main() {
+      gl_FragColor = vec4( vColor, 1.0 );
+      gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+    }
+  </script>
+
+
   <script src="kp_flame_webGL.js"></script>
 
 </body>

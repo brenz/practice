@@ -11,14 +11,14 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, lightHelper, stats,
-  spotLight, spotLights = [],
-  ambientLight,
   flame, flameGeometry,
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,
   rotateTweenL, rotateTweenR, moveCameraTween,
-  scrollProgress = 0
+  scrollProgress = 0,
+  uniforms,
+  particles = 100000
 
 /*
 * TODO: parameter for GUI panel remove in production
@@ -26,9 +26,9 @@ var SCREEN_WIDTH = window.innerWidth,
 var params = {
   color: [255, 255, 255],
   exposure: 1,
-  bloomStrength: 1.2,
-  bloomThreshold: 0.4,
-  bloomRadius: 0,
+  bloomStrength: 1.8,
+  bloomThreshold: 0.25,
+  bloomRadius: 0.7,
   rotateY: 0,
 };
 
@@ -71,24 +71,10 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color("rgb(0,45,95)");
 
-  // 2. Create Spotlight https://threejs.org/docs/#api/en/lights/SpotLight
-  // TODO: Add more light
-  for (var i = 0; i < 1; i++) {
-    spotLight = new THREE.SpotLight(0xffffff, 100);
-    spotLight.position.set(0, 0, 500);
-    spotLight.angle = Math.PI / 4;
-    spotLight.penumbra = 0.05;
-    spotLight.decay = 2;
-    spotLight.distance = 1000;
-    spotLights.push(spotLight);
-    scene.add(spotLight);
 
-    lightHelper = new THREE.SpotLightHelper(spotLight);
-    //scene.add( lightHelper);
-  }
-
-  ambientLight = new THREE.AmbientLight(0xaaeeff);
-  scene.add(ambientLight);
+  uniforms = {
+    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") }
+  };
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -99,35 +85,49 @@ function init() {
   // https://threejs.org/docs/#api/en/loaders/JSONLoader
   var loader = new THREE.JSONLoader();
 
+  // Create material
+  // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
+  // ## shaded martial
+  var shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: document.getElementById('vertexshader').textContent,
+    fragmentShader: document.getElementById('fragmentshader').textContent,
+
+    blending: THREE.AdditiveBlending,
+    depthTest: false,
+    transparent: true,
+    vertexColors: true
+  });
+  flameGeometry = new THREE.BufferGeometry();
+  var positions = [];
+  var colors = [];
+  var sizes = [];
+  var color = new THREE.Color();
+
   loader.load('./data/KPSM_flame.json', function (g, m) {
     // Create 10 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg = g.clone()
-    for (var i = 0; i < 1; i++) {
-      var scaleSize = 1 - i * 0.01;
-      g.merge(gg.clone().translate(0, 0, -i * 4).scale(scaleSize, scaleSize, scaleSize));
+    for (var i = 0; i < 5; i++) {
+      var scaleSize = 1 - i * 0.03;
+      g.merge(gg.clone().translate(0, 0, -i * 6).scale(scaleSize, scaleSize, scaleSize));
     }
+    var gv = g.vertices
+    particles = gv.length;
 
-    // Create material
-    // https://threejs.org/docs/index.html#api/en/materials/MeshPhongMaterial
-    // ## MeshPhongMaterial - A material for shiny surfaces with specular highlights.
-
-    var spriteMap = new THREE.TextureLoader().load( "img/spark1.png" );
-    flame = new THREE.Points();
-
-    var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
-    for (var j=0; j< g.vertices.length; j=j+5) {
-      var gv = g.vertices[j];
-      var sprite = new THREE.Sprite( spriteMaterial );
-      sprite.position.normalize();
-      sprite.position.add( gv);
-      sprite.position.multiplyScalar( 1 );
-      sprite.scale=new THREE.Vector3(100,100,100);
-			flame.add( sprite );
+    for (var j = 0; j < particles; j++) {
+      positions.push((gv[j].x));
+      positions.push((gv[j].y));
+      positions.push((gv[j].z));
+      color.setHSL((Math.random()*20+160)/256, 0.2+0.2*Math.sin(j), 0.4+0.4*Math.sin(j));
+      colors.push(color.r, color.g, color.b);
+      sizes.push(20);
     }
+    flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    flameGeometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    flameGeometry.addAttribute('size', new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
 
-    // Create flame element.
-
+    flame = new THREE.Points(flameGeometry, shaderMaterial);
 
     // 4. Add shinny Particles
     var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
@@ -161,14 +161,10 @@ function init() {
         250));
     }
 
-    // 6. Start Flame rotation, Spotlight animation
-    //flameRotation();
-    /*for (var i = 0; i < spotLights.length; i++) {
-      tweenlight(spotLights[i]);
-    }*/
+    // 6. Start Flame rotation
+    flameRotation();
 
   }) // End of load callback
-
   // 7. Add post processing effect:
   // 7.1 Add unreal bloom effect
   // https://threejs.org/examples/?q=unr#webgl_postprocessing_unreal_bloom
@@ -256,13 +252,14 @@ function init() {
       .on('progress', function (e) {
         cameraInter = Math.floor((window.pageYOffset+windowHalfY+10)/SCREEN_HEIGHT);
         console.log("Scroll on intro in progress:"+e)
-
         scrollProgress=e.progress;
+      })
+      .on('start',function (e){
+        flameRotationStop();
       })
       //.addIndicators() // add indicators (requires plugin)
       .addTo(controller);
   }
-
 }
 
 function animate(time) {
@@ -277,6 +274,16 @@ function render() {
       camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter+1].x-cameraPositions[cameraInter].x)*scrollProgress;
       camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter+1].y-cameraPositions[cameraInter].y)*scrollProgress;
       camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter+1].z-cameraPositions[cameraInter].z)*scrollProgress;
+  }
+  var time = Date.now() * 0.002;
+
+  if (flame !== undefined) {
+    var sizes = flameGeometry.attributes.size.array;
+    var fp = flameGeometry.attributes.position.array;
+    for (var i = 0; i < particles; i++) {
+      sizes[i] = 12 * (1 + Math.sin(0.05 * i  + time + fp[i*3]*0.01));
+    }
+    flameGeometry.attributes.size.needsUpdate = true;
   }
   renderer.render(scene, camera);
   composer.render();
@@ -294,6 +301,10 @@ function flameRotation() {
     rotateTweenR.chain(rotateTweenL);
   }
   rotateTweenL.start();
+}
+function flameRotationStop() {
+  rotateTweenL.stop();
+  rotateTweenR.stop();
 }
 
 function moveCamera(i) {
