@@ -1,0 +1,72 @@
+.scroll_down {
+  position: absolute;
+  bottom: 50px;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  -webkit-transition: all 1.5s ease-out;
+  transition: all 1.5s ease-out;
+  -webkit-transform: translateY(10px);
+          transform: translateY(10px);
+}
+
+.scroll_down .scroll_text {
+  color: white;
+  opacity: 1;
+}
+
+.scroll_down .arrow {
+  color: white;
+  width: 40px;
+  height: 40px;
+  font-size: 30px;
+}
+
+.scroll_down.fade-in {
+  opacity: 1;
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+
+.scroll_down.fade-out {
+  opacity: 0;
+  -webkit-transform: translateY(10);
+          transform: translateY(10);
+}
+
+.scroll_down .bounce {
+  -webkit-animation: bounce 2s infinite;
+          animation: bounce 2s infinite;
+}
+
+@-webkit-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    -webkit-transform: translateY(0) ease-out;
+            transform: translateY(0) ease-out;
+  }
+  40% {
+    -webkit-transform: translateY(-30px);
+            transform: translateY(-30px);
+  }
+  60% {
+    -webkit-transform: translateY(-15px);
+            transform: translateY(-15px);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    -webkit-transform: translateY(0) ease-out;
+            transform: translateY(0) ease-out;
+  }
+  40% {
+    -webkit-transform: translateY(-30px);
+            transform: translateY(-30px);
+  }
+  60% {
+    -webkit-transform: translateY(-15px);
+            transform: translateY(-15px);
+  }
+}
+/*# sourceMappingURL=scroll_down.css.map */

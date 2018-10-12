@@ -7,33 +7,34 @@
 // TODO: factory into object
 var SCREEN_WIDTH = window.innerWidth,
   SCREEN_HEIGHT = window.innerHeight,
-  mouseX = 0, mouseY = 0,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, stats,
+  uniforms,                                       // shade matirial uniforms
+  particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
   flame, flameGeometry,
   shinDots = [],
   cameraPositions = [],
-  cameraInter = 0,
-  rotateTweenL, rotateTweenR, moveCameraTween,
+  cameraInter = 0,                                // indicate the current camera position
+  rotateTweenL, rotateTweenR, moveCameraTween,    // Tween object
   scrollProgress = 0,
-  uniforms,
-  particles = 100000
+  introPlayed = 0
 
 /*
-* TODO: parameter for GUI panel remove in production
+* parameter for GUI panel
+* TODO: remove in production
 */
 var params = {
   color: [255, 255, 255],
   exposure: 1,
   bloomStrength: 1.6,
-  bloomThreshold: 0.3,
-  bloomRadius: 0.55,
+  bloomThreshold: 0.5,
+  bloomRadius: 0.2,
   rotateY: 0,
 };
 
 /*
-* WEBGL Supportive detecter
+* WEBGL Supportive detect
 */
 if (WEBGL.isWebGLAvailable() === true) {
   // User can have full exprience with WebGl, go to WEBGL init()
@@ -46,18 +47,23 @@ else {
 }
 
 /*
-* Load once,
+* Load once, create all the obj in init only
 * Warning! Do not change obj value while doing tween animation.
-* 1. Create scene.
-* 2. Create SpotLight
-* 3.1. JsonLoader load json data create by Blender
-* 3.2. Create Flame elements
-* 4. Create shinDots
-* 5. Define animation destination
-* 6. Start Flame rotation, Spotlight animation
-* 7. Add post processing effect
-* 8. Stats indicator
-* 9. Add Event Listener
+* 1. Create/Define scene and render.
+* 2 Create Martial, by useing shade matrial
+* 3.1 JsonLoader load json data create by Blender/(start load call back)
+* 3.2 Create Flame elements
+* 3.3 Add shinny Particles
+* 3.4 Adjust flame position
+* 3.5 Define animation destination, defer cameraPositions
+* 3.6 Start Flame rotation
+* 4. Add post processing effect
+* 5. Add Stats indicator
+* 6. GUI control
+* 7. Add Event Listener, scroll effect binding in next section
+* 8. Add scroll effect
+* 8.1 Create scroll scene for intro
+* 8.2 Create scroll scene for rest of slide
 */
 function init() {
   var container;
@@ -66,29 +72,24 @@ function init() {
   camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
   camera.position.z = 1000;
 
-
-  // 1. Create scene
+  // 1. Create/Define scene and render
   // TODO: create fog and scence stage?
   scene = new THREE.Scene();
-  scene.background = new THREE.Color("rgb(0,45,95)");
+  scene.background = new THREE.Color("rgb(17,51,128)");
 
-
-  uniforms = {
-    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") }
-  };
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true , alpha: true});
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
 
-  // 3.1 Load Json data.
-  // https://threejs.org/docs/#api/en/loaders/JSONLoader
-  var loader = new THREE.JSONLoader();
-
-  // Create material
+  // 2 Create Martial, by useing shade matrial
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
-  // ## shaded martial
+  // ## shaded martial, uniforms defined in html
+  uniforms = {
+    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
+    opacity: { value: 0 }
+  };
+
   var shaderMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: document.getElementById('vertexshader').textContent,
@@ -99,40 +100,50 @@ function init() {
     transparent: true,
     vertexColors: true
   });
+
+  // 3.1 JsonLoader load json data create by Blender/(start load call back)
+  // https://threejs.org/docs/#api/en/loaders/JSONLoader
+  var loader = new THREE.JSONLoader();
+
   flameGeometry = new THREE.BufferGeometry();
   var positions = [];
   var colors = [];
   var sizes = [];
   var color = new THREE.Color();
 
+  //(start load call back)
   loader.load('./data/KPSM_flame.json', function (g, m) {
-    // Create 10 layers by normal geomertery
+    // Create 5 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg = g.clone()
-    for (var i = 0; i < 5; i++) {
-      var scaleSize = 1 - i * 0.03;
+    for (var i = 0; i < 15; i++) {
+      var scaleSize = 1 - i * 0.0002;
       g.merge(gg.clone().translate(0, 0, -i * 6).scale(scaleSize, scaleSize, scaleSize));
     }
     var gv = g.vertices
     particles = gv.length;
 
+    // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
       positions.push((gv[j].x));
       positions.push((gv[j].y));
       positions.push((gv[j].z));
-      color.setHSL((Math.random()*20+160)/256, 0.2+0.2*Math.sin(j), 0.4+0.4*Math.sin(j));
+      color.setHSL(204/ 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.5 * Math.sin(j));
       colors.push(color.r, color.g, color.b);
-      sizes.push(20);
+      sizes.push(Math.random()*15);
     }
+    // 3.2 create flame geomertery
     flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     flameGeometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     flameGeometry.addAttribute('size', new THREE.Float32BufferAttribute(sizes, 1).setDynamic(true));
 
     flame = new THREE.Points(flameGeometry, shaderMaterial);
 
-    // 4. Add shinny Particles
+    // 3.3 Add shinny Particles
     var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    sphereMaterial.transparent = true;
+    sphereMaterial.opacity = 0;
     var sectionLength = document.getElementsByTagName("section").length;
     for (var k = 0; k < sectionLength - 1; k++) {
       var shinDot = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -142,33 +153,36 @@ function init() {
       shinDots.push(shinDot);
     }
 
-    // Adjust flame position
+    // 3.4 Adjust flame position
     // TODO: Conside responsive design
-    flame.rotateY(-0.1);
+    flame.rotateY(-0.3);
+    flame.position.y=-30;
     flame.scale.multiplyScalar(2);
-
+    flame.onAfterRender = animateFlame;
     scene.add(flame);
 
-    // 5. Define animation destination, defer cameraPositions
+    // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
       -windowHalfX / 2 + 100,
       60,
-      1000));
-    //cameraPositions.push(new THREE.Vector3(flame.position.x, 0, 1000));
+      1000)); // first position is the start position
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x + flame.position.x,
         shinDots[i].position.y,
-        200));
+        150));
     }
 
-    // 6. Start Flame rotation
+    // 3.6 Start Flame rotation
     flameRotation();
 
   }) // End of load callback
-  // 7. Add post processing effect:
-  // 7.1 Add unreal bloom effect
+
+  // 4. Add post processing effect:
+  // --- Add unreal bloom effect
   // https://threejs.org/examples/?q=unr#webgl_postprocessing_unreal_bloom
+  // Add effctFocus
+  // https://threejs.org/examples/#webgl_points_dynamic
   var renderScene = new THREE.RenderPass(scene, camera);
   var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.renderToScreen = true;
@@ -176,26 +190,17 @@ function init() {
   bloomPass.strength = params.bloomStrength;
   bloomPass.radius = params.bloomRadius;
 
-  // Add effctFocus
-  // https://threejs.org/examples/#webgl_points_dynamic
-  var effectFocus = new THREE.ShaderPass(THREE.FocusShader);
-  effectFocus.uniforms["screenWidth"].value = window.innerWidth;
-  effectFocus.uniforms["screenHeight"].value = window.innerHeight;
-  effectFocus.renderToScreen = true;
-
   composer = new THREE.EffectComposer(renderer);
   composer.setSize(window.innerWidth, window.innerHeight);
   composer.addPass(renderScene);
-  // FIXME: Can't add two compose
   composer.addPass(bloomPass);
-  //composer.addPass(effectFocus);
 
-  // 8. Add Stats indicator
+  // 5. Add Stats indicator
   // TODO: remove stats indicator in real products
   stats = new Stats();
   container.appendChild(stats.dom);
 
-  // GUI control
+  // 6. GUI control
   // TODO: Remove GUI control in real products
   var gui = new dat.GUI();
   gui.addColor(params, 'color').onChange(function (value) {
@@ -217,81 +222,115 @@ function init() {
     flame.rotation.y = Number(value);
   });
 
-
-  // 9. Add EventListener
-  addMouseEvents();
+  // 7. Add EventListener
   window.addEventListener('resize', onWindowResize, false);
 
-  //10. Add scroll effect
+  // 8. Add scroll effect
+  // http://scrollmagic.io/
   var controller = new ScrollMagic.Controller();
-
-  // get all slides
   var slides = document.querySelectorAll("section");
 
   // Create Scene from Section intro
   new ScrollMagic.Scene({
     triggerElement: "#section0",
-    duration: windowHalfY -11,//SCREEN_HEIGHT,
-    offset: windowHalfY+10,
+    duration: 1,
+    triggerHook: 0
   })
-    .setClassToggle("#section0", "fade-out")
     .on('progress', function (e) {
       cameraInter = 0
       //console.log("Scroll on intro in progress:"+e.progress)
-      scrollProgress=e.progress;
+      scrollProgress = e.progress;
     })
-    //.addIndicators({}) // add indicators (requires plugin)
+    .on('leave', function (e) {
+      flameRotationStop();
+      document.querySelectorAll("section")[0].classList.remove("fade-in");
+      scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
+    })
+    .on('enter', function (e) {
+      flameRotation();
+      document.querySelectorAll("section")[0].classList.add("fade-in");
+    })
+    .addIndicators({}) // add indicators (requires plugin)
     .addTo(controller);
 
-  // create scene from 1st slide
-  for (var l = 1; l < slides.length; l++) {
+  // Create scene for the rest slide
+   for (var l = 1; l < slides.length; l++) {
     new ScrollMagic.Scene({
       triggerElement: "#section" + l,
-      duration: window.innerHeight - 100,
+      duration: 2,
+      triggerHook: 0
     })
       .setClassToggle("#section" + l, "fade-in")
       .on('progress', function (e) {
-        cameraInter = Math.floor((window.pageYOffset+windowHalfY+10)/SCREEN_HEIGHT);
-        console.log("Scroll on intro in progress:"+e)
-        scrollProgress=e.progress;
+        console.log("Scroll on the rest in progress:" + e);
+        cameraInter = Math.floor((window.pageYOffset + windowHalfY + 10) / SCREEN_HEIGHT);
+        scrollProgress = e.progress;
       })
-      .on('start',function (e){
-        flameRotationStop();
+      .on('start', function (e) {
       })
-      //.addIndicators() // add indicators (requires plugin)
+      .on('enter', function(e){
+        console.log("Scroll on the rest in enter:" + e);
+        //scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
+      })
+      .on('end', function(e){
+      })
+      .addIndicators() // add indicators (requires plugin)
       .addTo(controller);
   }
-}
+} // End of init()
 
-function animate(time) {
+function animate() {
   requestAnimationFrame(animate);
   render();
-  TWEEN.update(time);
+  TWEEN.update();
   stats.update();
 }
 
 function render() {
-  if(cameraPositions[cameraInter+1] !== undefined && scrollProgress < 1){
-      camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter+1].x-cameraPositions[cameraInter].x)*scrollProgress;
-      camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter+1].y-cameraPositions[cameraInter].y)*scrollProgress;
-      camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter+1].z-cameraPositions[cameraInter].z)*scrollProgress;
+  if (cameraPositions[cameraInter + 1] !== undefined && scrollProgress < 1) {
+    camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter + 1].x - cameraPositions[cameraInter].x) * scrollProgress;
+    camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter + 1].y - cameraPositions[cameraInter].y) * scrollProgress;
+    camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter + 1].z - cameraPositions[cameraInter].z) * scrollProgress;
   }
-  var time = Date.now() * 0.002;
 
   if (flame !== undefined) {
-    var sizes = flameGeometry.attributes.size.array;
-    var fp = flameGeometry.attributes.position.array;
-    for (var i = 0; i < particles; i++) {
-      sizes[i] = 12 * (1 + Math.sin(0.05 * i  + time + fp[i*3]*0.01));
-    }
-    flameGeometry.attributes.size.needsUpdate = true;
+    if (introPlayed !== 1) { playIntro(); }
   }
   renderer.render(scene, camera);
   composer.render();
 }
+/*
+* trigger by flame element render ready, turn it in visiable, and let text fade-in, triggier in render();
+*/
+function playIntro() {
+  //Todo: Detail the intro
+  window.scrollTo(0,0);
+  introPlayed = 1;
+  document.querySelectorAll("section")[0].classList.add("fade-in");
+  document.getElementsByClassName("scroll_down")[0].classList.add("fade-in");
+  new TWEEN.Tween(flame.material.uniforms.opacity).to({ value: 1 }, 2000)
+    .easing(TWEEN.Easing.Quadratic.Out)
+    .onUpdate(function (){
+      flame.position.y +=0.4;
+    })
+    .start();
+}
+function animateFlame() {
+  var time = Date.now() * 0.002;
+  var sizes = flameGeometry.attributes.size.array;
+  var fp = flameGeometry.attributes.position.array
+/*   for (var i = 0; i < particles; i+=Math.floor(200*Math.random())) {
+    sizes[i] = 8 * (1 + Math.sin(time + fp[i * 3] * 0.01) * Math.random());
+  }
+  flameGeometry.attributes.size.needsUpdate = true; */
+}
 
+/*
+* Start the flame shimm
+*/
 function flameRotation() {
-  if (!rotateTweenL && !rotateTweenR) {
+  console.log("flame start rotation");
+  if (!rotateTweenL && !rotateTweenR && flame != undefined) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
       .to({ y: 0.1 }, 10000)
       .easing(TWEEN.Easing.Linear.None)
@@ -300,18 +339,22 @@ function flameRotation() {
       .easing(TWEEN.Easing.Linear.None)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
+    rotateTweenL.start();
   }
-  rotateTweenL.start();
 }
+/*
+* Stop the flame shimm
+*/
 function flameRotationStop() {
-  rotateTweenL.stop();
-  rotateTweenR.stop();
+  console.log("flame stop rotation");
+  if (rotateTweenL || rotateTweenR){
+    rotateTweenL.stop();
+    rotateTweenR.stop();
+  }
 }
 
 function moveCamera(i) {
-  //document.getElementById("console").innerHTML = "Current Story // CameraInter:" + i;
-  rotateTweenL.stop();
-  rotateTweenR.stop();
+  flameRotationStop();
   if (i === undefined) {
     i = cameraInter;
   }
@@ -323,16 +366,6 @@ function moveCamera(i) {
   })
 }
 
-function addMouseEvents() {
-  //document.addEventListener('mousemove', onDocumentMouseMove, false);
-  //document.addEventListener('wheel', onDocumentMouseScroll, false);
-  //body.addEventListener("scroll", onbodyScroll, false);
-  //document.addEventListener('touchstart', touchLock, false);
-  //document.addEventListener('mousedown', touchLock, false);
-  //document.addEventListener('mouseup', touchMove, false);
-  //document.addEventListener('touchend', touchMove, false);
-}
-
 function onWindowResize() {
   windowHalfX = window.innerWidth / 2;
   windowHalfY = window.innerHeight / 2;
@@ -340,6 +373,7 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
 
 /*
  * Animates a Vector3 to the target
@@ -369,16 +403,30 @@ function animateVector3(vectorToAnimate, target, options) {
   // return the tween in case we want to manipulate it later on
   return tweenVector3;
 }
+/**
+ * Scroll to `(x, y)`.
+ * @param {Number} x
+ * @param {Number} y
+ * @param {options}  ease: 'out-bounce', duration: 1500y
+ */
+function scrollToTween(x, y, options) {
+  options = options || {};
 
-function tweenlight(light) {
-  new TWEEN.Tween(light.position).to({
-    x: (Math.random() * 1000) + 500,
-    y: (Math.random() * 2000) - 1000,
-    z: (Math.random() * 50) - 50
-  }, 5000)
-    .easing(TWEEN.Easing.Quadratic.Out)
-    .onComplete(function () {
-      tweenlight(light)
+  // start position
+  var start = {
+    left: window.pageXOffset || window.scrollX,
+    top: window.pageYOffset || window.scrollY
+  },
+   easing = options.easing || TWEEN.Easing.Quadratic.In,
+   duration = options.duration || 2000;
+
+  //setup tween
+  var tween = new TWEEN.Tween(start)
+    .to({ left: x, top: y }, duration)
+    .easing(easing)
+    .onUpdate(function(o){
+      window.scrollTo(o.left | 0, o.top | 0);
     })
-    .start();
+  tween.start();
+  return tween;
 }

@@ -12,58 +12,61 @@
 </head>
 
 <body class="homepage">
-<div class="">
-  <section class="intro row align-items-center" id="section0">
-    <div class="col-md-6 offset-md-2">
-      <h1>Where does your<br />journey begin</h1>
-      <button id="imemerse">Immerse yourself →</button>
-    </div>
-  </section>
+  <div class="container-fluid">
+    <section class="intro row align-items-center" id="section0">
+      <div class="col-md-6 offset-md-2">
+        <h1>Where does your<br />journey begin</h1>
+        <button id="imemerse">Immerse yourself →</button>
+      </div>
+    </section>
 
-  <section class="row align-items-center" id="section1">
-    <div class="col-md-6">
-      <img src="img/placeholder-image.jpg">
-    </div>
-    <div class="col-md-6">
-      <h2>Your thirst for knowledge and capacity for compassion</h2>
-      <span class="tearsplit"></span>
-      <p>We're recruitiong our inaugural class to become the holistic caregivers and health advocates of tomorrow.</p>
-    </div>
-  </section>
+    <section class="row align-items-center" id="section1">
+      <div class="col-md-6">
+        <img src="img/round_image1.png">
+      </div>
+      <div class="col-md-4">
+        <h2>Your thirst for knowledge and capacity for compassion</h2>
+        <span class="tearsplit"></span>
+        <p>We're recruitiong our inaugural class to become the holistic caregivers and health advocates of tomorrow.</p>
+      </div>
+    </section>
 
-  <section class="row align-items-center" id="section2">
-    <div class="col-md-6">
-      <img src="img/placeholder-image.jpg">
-    </div>
-    <div class="col-md-6">
-      <h2>A new kind kind of education for tomorrow's doctors</h2>
-      <span class="tearsplit"></span>
-      <p>You'll be supported by an academic environment grounded in hands-on learning and close collaboration</p>
-    </div>
-  </section>
+    <section class="row align-items-center" id="section2">
+      <div class="col-md-6">
+        <img src="img/round_image2.png">
+      </div>
+      <div class="col-md-3">
+        <h2>A new kind kind of education for tomorrow's doctors</h2>
+        <span class="tearsplit"></span>
+        <p>You'll be supported by an academic environment grounded in hands-on learning and close collaboration</p>
+      </div>
+    </section>
 
-  <section class="row align-items-center" id="section3">
-    <div class="col-md-6">
-      <img src="img/placeholder-image.jpg">
-    </div>
-    <div class="col-md-6">
-      <h2>Learning enhanced by cutting-edge technology</h2>
-      <span class="tearsplit"></span>
-      <p>By leveraging the lastest technologies we're building a curriculum for tomorrow.</p>
-    </div>
-  </section>
+    <section class="row align-items-center" id="section3">
+      <div class="col-md-6">
+        <img src="img/round_image3.png">
+      </div>
+      <div class="col-md-3">
+        <h2>Learning enhanced by cutting-edge technology</h2>
+        <span class="tearsplit"></span>
+        <p>By leveraging the lastest technologies we're building a curriculum for tomorrow.</p>
+      </div>
+    </section>
 
-  <section class="row align-items-center" id="section4">
-    <div class="col-md-6">
-      <img src="img/placeholder-image.jpg">
-    </div>
-    <div class="col-md-6">
-      <h2>Caregiving that extends beyond the exam room</h2>
-      <span class="tearsplit"></span>
-      <p>With an emphasis on health systems science, you'll learn how to better care for patients.</p>
-    </div>
-  </section>
-</div>
+    <section class="row align-items-center" id="section4">
+      <div class="col-md-6">
+        <img src="img/round_image4.png">
+      </div>
+      <div class="col-md-3">
+        <h2>Caregiving that extends beyond the exam room</h2>
+        <span class="tearsplit"></span>
+        <p>With an emphasis on health systems science, you'll learn how to better care for patients.</p>
+      </div>
+    </section>
+  </div>
+  <div class="scroll_down">
+    <div class="scroll_text">Scroll</div><span class="arrow bounce">&#8595;</span>
+  </div>
   <div id="flame-container"></div>
 
 
@@ -72,7 +75,6 @@
   <script src="js/WebGL.js"></script>
   <script src="js/shaders/CopyShader.js"></script>
   <script src="js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="js/shaders/FocusShader.js"></script>
 
   <script src="js/postprocessing/EffectComposer.js"></script>
   <script src="js/postprocessing/RenderPass.js"></script>
@@ -98,9 +100,10 @@
 
   <script type="x-shader/x-fragment" id="fragmentshader">
     uniform sampler2D texture;
+    uniform float opacity;
     varying vec3 vColor;
     void main() {
-      gl_FragColor = vec4( vColor, 1.0 );
+      gl_FragColor = vec4( vColor, opacity );
       gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
   </script>
