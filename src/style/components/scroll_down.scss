@@ -1,6 +1,6 @@
 //Scroll down arrow styles starts here
 .scroll_down{
-  position: absolute;
+  position: fixed;
   bottom: 50px;
   left:0px;
   width:100%;
@@ -13,6 +13,7 @@
     color:white;
     opacity: 1;
   }
+
   .arrow
   {
     color:white;
@@ -20,10 +21,10 @@
     height: 40px;
     font-size: 30px;
   }
+
   &.fade-in{
     opacity: 1;
     transform: translateY(0);
-
   }
   &.fade-out{
     opacity: 0;

@@ -12,25 +12,29 @@ var SCREEN_WIDTH = window.innerWidth,
   camera, scene, renderer, composer, stats,
   uniforms,                                       // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
-  flame, flameGeometry,
+  flame, flameGeometry, gv=[],
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,                                // indicate the current camera position
   rotateTweenL, rotateTweenR, moveCameraTween,    // Tween object
   scrollProgress = 0,
-  introPlayed = 0
+  introPlayed = 0,
+  thickNess = 15, thickDis = 4.5, thickScale =0
 
 /*
 * parameter for GUI panel
 * TODO: remove in production
 */
 var params = {
-  color: [255, 255, 255],
+  color: [71,121,158],
+  particlesSize: 30,
+  particlesRand: 6.4,
   exposure: 1,
-  bloomStrength: 1.6,
-  bloomThreshold: 0.5,
-  bloomRadius: 0.2,
+  bloomThreshold: 0.49,
+  bloomStrength: 2.2,
+  bloomRadius: 0.72,
   rotateY: 0,
+  ifRotation : true
 };
 
 /*
@@ -86,9 +90,12 @@ function init() {
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
   // ## shaded martial, uniforms defined in html
   uniforms = {
-    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
-    opacity: { value: 0 }
+    texture:   { value: new THREE.TextureLoader().load("./img/spark1.png") },
+    opacity:   { value: 0 },
+    topColor:  { value: new THREE.Color( 0x0077ff ) },
   };
+
+  uniforms.topColor.value.copy( new THREE.Color(params.color[0]/255,params.color[1]/255,params.color[2]/255) );
 
   var shaderMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
@@ -112,25 +119,25 @@ function init() {
   var color = new THREE.Color();
 
   //(start load call back)
-  loader.load('./data/KPSM_flame.json', function (g, m) {
+  loader.load('./data/KPSM_1D_4.json', function (g, m) {
     // Create 5 layers by normal geomertery
-    g.scale(500, 500, 500);
+    g.scale(560, 560, 560);
     var gg = g.clone()
-    for (var i = 0; i < 15; i++) {
-      var scaleSize = 1 - i * 0.0002;
-      g.merge(gg.clone().translate(0, 0, -i * 6).scale(scaleSize, scaleSize, scaleSize));
+    for (var i = 0; i < thickNess; i++) {
+      var scaleSize = 1 - i * thickScale;
+      g.merge(gg.clone().translate(0, 0, -i * thickDis).scale(scaleSize, scaleSize, scaleSize));
     }
-    var gv = g.vertices
+    gv = g.vertices
     particles = gv.length;
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
-      positions.push((gv[j].x));
-      positions.push((gv[j].y));
-      positions.push((gv[j].z));
-      color.setHSL(204/ 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.5 * Math.sin(j));
+      positions.push((gv[j].x)+Math.random()*Math.sin(j)*params.particlesRand);
+      positions.push((gv[j].y)+Math.random()*Math.sin(j)*params.particlesRand);
+      positions.push((gv[j].z)+Math.random()*Math.sin(j)*params.particlesRand);
+      color.setHSL(204/ 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(Math.random()*j));
       colors.push(color.r, color.g, color.b);
-      sizes.push(Math.random()*15);
+      sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery
     flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -201,26 +208,56 @@ function init() {
   container.appendChild(stats.dom);
 
   // 6. GUI control
+  // https://github.com/dataarts/dat.gui && http://workshop.chromeexperiments.com/examples/gui/#1--Basic-Usage
   // TODO: Remove GUI control in real products
   var gui = new dat.GUI();
-  gui.addColor(params, 'color').onChange(function (value) {
-    //AmbientLight.color
+  var f1 = gui.addFolder('flame shape and color');
+  f1.addColor(params, 'color').onChange(function (value) {
+    uniforms.topColor.value = new THREE.Color(value[0]/255,value[1]/255,value[2]/255)
   })
-  gui.add(params, 'exposure', 0.1, 2).onChange(function (value) {
+  f1.add(params, 'particlesSize', 10, 50).step(2).onChange(function (value) {
+    params.particlesSize = Number(value);
+    var sizes=flameGeometry.attributes.size.array
+    for (var i = 0; i < particles; i++) {
+      sizes[i] = Math.random() * params.particlesSize;
+    }
+    flameGeometry.attributes.size.needsUpdate = true;
+  });
+  f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
+    params.particlesRand =  Number(value);
+    var positions = flameGeometry.attributes.position.array
+    for (var j = 0; j < particles; j++) {
+      positions[j*3]=(gv[j].x)+Math.random()*Math.sin(j)*params.particlesRand;
+      positions[j*3+1]=(gv[j].y)+Math.random()*Math.sin(j)*params.particlesRand;
+      positions[j*3+2]=(gv[j].z)+Math.random()*Math.sin(j)*params.particlesRand;
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  });
+  var f2 = gui.addFolder('brightness and bloom effect');
+  f2.add(params, 'exposure', 0.1, 2).onChange(function (value) {
     renderer.toneMappingExposure = Math.pow(value, 4.0);
   });
-  gui.add(params, 'bloomThreshold', 0.0, 1.0).onChange(function (value) {
+  f2.add(params, 'bloomThreshold', 0.0, 1.0).onChange(function (value) {
     bloomPass.threshold = Number(value);
   });
-  gui.add(params, 'bloomStrength', 0.0, 3.0).onChange(function (value) {
+  f2.add(params, 'bloomStrength', 0.0, 3.0).onChange(function (value) {
     bloomPass.strength = Number(value);
   });
-  gui.add(params, 'bloomRadius', 0.0, 1.0).step(0.01).onChange(function (value) {
+  f2.add(params, 'bloomRadius', 0.0, 1.0).step(0.01).onChange(function (value) {
     bloomPass.radius = Number(value);
   });
-  gui.add(params, 'rotateY', -1.0, 1.0).step(0.01).onChange(function (value) {
+  var f3 = gui.addFolder('flame rotation')
+  f3.add(params, 'rotateY', -1.0, 1.0).step(0.01).onChange(function (value) {
     flame.rotation.y = Number(value);
   });
+  f3.add(params, 'ifRotation').onChange(function(value){
+    if(value){
+      flameRotation();
+    }else{
+      flameRotationStop();
+    }
+  })
+
 
   // 7. Add EventListener
   window.addEventListener('resize', onWindowResize, false);
@@ -233,7 +270,7 @@ function init() {
   // Create Scene from Section intro
   new ScrollMagic.Scene({
     triggerElement: "#section0",
-    duration: 1,
+    duration: SCREEN_HEIGHT,
     triggerHook: 0
   })
     .on('progress', function (e) {
@@ -242,13 +279,13 @@ function init() {
       scrollProgress = e.progress;
     })
     .on('leave', function (e) {
-      flameRotationStop();
-      document.querySelectorAll("section")[0].classList.remove("fade-in");
-      scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
+      //flameRotationStop();
+      //document.querySelectorAll("section")[0].classList.remove("fade-in");
+      //scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
     })
     .on('enter', function (e) {
-      flameRotation();
-      document.querySelectorAll("section")[0].classList.add("fade-in");
+      //flameRotation();
+      //document.querySelectorAll("section")[0].classList.add("fade-in");
     })
     .addIndicators({}) // add indicators (requires plugin)
     .addTo(controller);
@@ -311,18 +348,21 @@ function playIntro() {
   new TWEEN.Tween(flame.material.uniforms.opacity).to({ value: 1 }, 2000)
     .easing(TWEEN.Easing.Quadratic.Out)
     .onUpdate(function (){
-      flame.position.y +=0.4;
+      flame.position.y +=0.1;
     })
     .start();
 }
+
 function animateFlame() {
   var time = Date.now() * 0.002;
   var sizes = flameGeometry.attributes.size.array;
   var fp = flameGeometry.attributes.position.array
-/*   for (var i = 0; i < particles; i+=Math.floor(200*Math.random())) {
-    sizes[i] = 8 * (1 + Math.sin(time + fp[i * 3] * 0.01) * Math.random());
+  for (var i = 0; i < particles; i+= Math.floor(1500*Math.random())) {
+    sizes[i] = Math.random() * params.particlesSize;
+    //sizes[i] = 20 * (1+Math.sin(time));
+    //sizes[i] = 12 * (1 + Math.sin(time + fp[i * 3] * 0.01) * Math.random());
   }
-  flameGeometry.attributes.size.needsUpdate = true; */
+  flameGeometry.attributes.size.needsUpdate = true;
 }
 
 /*
@@ -332,13 +372,15 @@ function flameRotation() {
   console.log("flame start rotation");
   if (!rotateTweenL && !rotateTweenR && flame != undefined) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
-      .to({ y: 0.1 }, 10000)
+      .to({ y: -0.1 }, 10000)
       .easing(TWEEN.Easing.Linear.None)
     rotateTweenR = new TWEEN.Tween(flame.rotation)
       .to({ y: -0.3 }, 10000)
       .easing(TWEEN.Easing.Linear.None)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
+    rotateTweenL.start();
+  }else if(rotateTweenL && rotateTweenR){
     rotateTweenL.start();
   }
 }

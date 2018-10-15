@@ -1,0 +1,81 @@
+.circlar_timeline {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}
+
+.circlar_timeline.hide {
+  display: none;
+}
+
+.circlar_timeline .inactive_circlar, .circlar_timeline .active_circlar {
+  width: 364px;
+  height: 364px;
+  border: 1px solid #D8D8D8;
+  border-radius: 364px;
+  position: absolute;
+  bottom: 0px;
+  right: -325px;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.circlar_timeline .active_circlar {
+  border: 1px solid #ffffff;
+  opacity: 1;
+  z-index: 1;
+  top: -69px;
+}
+
+.circlar_timeline .active_mask {
+  position: absolute;
+  right: 0px;
+  bottom: 284px;
+  display: block;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.circlar_timeline .progress-dot {
+  background: #003568;
+  width: 12px;
+  height: 12px;
+  border: 1.1px solid #FFFFFF;
+  border-radius: 12px;
+  display: block;
+  position: absolute;
+  z-index: 10;
+}
+
+.circlar_timeline .progress-dot.active {
+  width: 8.3px;
+  height: 8.9px;
+  -webkit-filter: blur(2.3px);
+  filter: blur(2.3px);
+  background-image: radial-gradient(circle at 50% 39%, #ffffff, #ffffff);
+  display: block;
+  z-index: 10;
+}
+
+.circlar_timeline .progress-dot.active::after {
+  width: 26px;
+  height: 26px;
+  border-radius: 26px;
+  -webkit-filter: blur(1px);
+  filter: blur(1px);
+  border: solid 1.2px rgba(182, 207, 236, 0.48);
+  display: block;
+  content: " ";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  z-index: 9;
+}
+
+.circlar_timeline .progress-dot.played {
+  width: 12px;
+  height: 12px;
+  border: solid 0.8px #ffffff;
+  background-color: #ffffff;
+}
+/*# sourceMappingURL=circlar_timeline.css.map */

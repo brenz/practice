@@ -1,6 +1,7 @@
 @import "normalize";
 //------------------------------------------------------------------- Components
-@import "scroll_down";
+@import "components/scroll_down";
+@import "components/circlar_timeline";
 
 html{
   height: 100vh;
@@ -9,18 +10,16 @@ html{
 
   margin: 0px;
   overflow-x: hidden;
-  font-family: 'Gotham', 'Verdana', 'Avenir';
+  font-family: "Montserrat",'Gotham', 'Verdana', 'Avenir';
   font-size:100%;
   height:100vh;
 
   section {
     position: relative;
     height: calc(100vh);
-    width:100%;
     align-items: center;
-    transition: all 2s ease-out;
-    opacity: 0;
-
+    transition: all 2s ease-out 1s;
+    /*opacity: 1;*/
 
     &.fade-in {
       opacity: 1;
@@ -29,11 +28,11 @@ html{
     h1 {
       color: white;
       font-size: 3rem;
-      transition: all 2s ease-out;
+      transition: all 2s ease-out 1s;
       transform: translateY(50px);
     }
     button {
-      transition: all 2s ease-out;
+      transition: all 2s ease-out 1s;
       transform: translateY(50px);
     }
     h2 {
@@ -56,10 +55,10 @@ html{
       width:10px;
       height:10px;
       transition: all 1s ease-out;
-      /*border-top-left-radius: 0;
+      border-top-left-radius: 0;
       border-top-right-radius: 50%;
       border-bottom-right-radius: 50%;
-      border-bottom-left-radius: 0;*/
+      border-bottom-left-radius: 0;
     }
     &.fade-in {
       h1 {

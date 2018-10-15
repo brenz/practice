@@ -12,15 +12,15 @@
 </head>
 
 <body class="homepage">
-  <div class="container-fluid">
-    <section class="intro row align-items-center" id="section0">
+
+    <section class="intro row align-items-center no-gutters" id="section0">
       <div class="col-md-6 offset-md-2">
         <h1>Where does your<br />journey begin</h1>
         <button id="imemerse">Immerse yourself →</button>
       </div>
     </section>
 
-    <section class="row align-items-center" id="section1">
+    <section class="row align-items-center no-gutters" id="section1">
       <div class="col-md-6">
         <img src="img/round_image1.png">
       </div>
@@ -31,7 +31,7 @@
       </div>
     </section>
 
-    <section class="row align-items-center" id="section2">
+    <section class="row align-items-center no-gutters" id="section2">
       <div class="col-md-6">
         <img src="img/round_image2.png">
       </div>
@@ -42,7 +42,7 @@
       </div>
     </section>
 
-    <section class="row align-items-center" id="section3">
+    <section class="row align-items-center no-gutters" id="section3">
       <div class="col-md-6">
         <img src="img/round_image3.png">
       </div>
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <section class="row align-items-center" id="section4">
+    <section class="row align-items-center no-gutters" id="section4">
       <div class="col-md-6">
         <img src="img/round_image4.png">
       </div>
@@ -63,10 +63,11 @@
         <p>With an emphasis on health systems science, you'll learn how to better care for patients.</p>
       </div>
     </section>
-  </div>
+
   <div class="scroll_down">
     <div class="scroll_text">Scroll</div><span class="arrow bounce">&#8595;</span>
   </div>
+  <div class="circlar_timeline"></div>
   <div id="flame-container"></div>
 
 
@@ -101,14 +102,15 @@
   <script type="x-shader/x-fragment" id="fragmentshader">
     uniform sampler2D texture;
     uniform float opacity;
+    uniform vec3 topColor;
     varying vec3 vColor;
     void main() {
-      gl_FragColor = vec4( vColor, opacity );
+      gl_FragColor = vec4(topColor*vColor, opacity );
       gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
   </script>
 
-
+  <script src="js/circlar_timeline.js"></script>
   <script src="kp_flame_webGL.js"></script>
 
 </body>
