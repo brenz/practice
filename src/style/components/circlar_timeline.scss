@@ -1,0 +1,84 @@
+.circlar_timeline{
+  position: fixed;
+  right:0;
+  bottom:0;
+  z-index: 200;
+
+  &.hide{
+    display:none;
+  }
+
+  .inactive_circlar{
+    width:364px;
+    height:364px;
+    border:1px solid #D8D8D8;
+    border-radius: 364px;
+    position: absolute;
+    bottom:0px;
+    right:-325px;
+    opacity: 0.5;
+    z-index: 0;
+  }
+  .active_circlar{
+    @extend .inactive_circlar;
+    border:1px solid #ffffff;
+    opacity: 1;
+    z-index: 1;
+    top:-69px;
+  }
+  .active_mask{
+    position: absolute;
+    right:0px;
+    bottom:284px;
+    display: block;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .progress-dot{
+    background: #003568;
+    width:12px;
+    height: 12px;
+    border:1.1px solid #FFFFFF;
+    border-radius: 12px;
+    display:block;
+    position: absolute;
+    z-index: 10;
+
+    &.active{
+      width: 12px;
+      height: 12px;
+      -webkit-filter: blur(1px);
+      filter: blur(1px);
+      background-image: radial-gradient(circle at 50% 39%, #ffffff, #ffffff);
+      display:block;
+      z-index: 10;
+
+      &::after{
+        width: 26px;
+        height: 26px;
+        border-radius: 26px;
+        -webkit-filter: blur(1px);
+        -moz-box-shadow:    inset 0px 2px 4px 2px rgba(0,0,0,0.5);
+        -webkit-box-shadow: inset 0px 2px 4px 2px rgba(0,0,0,0.5);
+        box-shadow:         inset 0px 2px 4px 2px rgba(0,0,0,0.5);
+        filter: blur(1px);
+        border: solid 1.2px rgba(182, 207, 236, 0.48);
+        //background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0), rgba(75, 105, 149, 0.49) 44%, rgba(0, 43, 104, 0.7));
+        display:block;
+        content: "";
+        position: absolute;
+        top:-8px;
+        left:-8px;
+        z-index: 9;
+      }
+    }
+    &.played{
+      width: 12px;
+      height: 12px;
+      border: solid 0.8px #ffffff;
+      background-color: #ffffff;
+    }
+  }
+
+}
