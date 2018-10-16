@@ -12,42 +12,50 @@ var SCREEN_WIDTH = window.innerWidth,
   camera, scene, renderer, composer, stats,
   uniforms,                                       // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
-  flame, flameGeometry, gv=[],
+  flame, flameGeometry, gv = [],
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,                                // indicate the current camera position
   rotateTweenL, rotateTweenR, moveCameraTween,    // Tween object
-  scrollProgress = 0,
   introPlayed = 0,
-  thickNess = 15, thickDis = 4.5, thickScale =0
+  thickNess = 15, thickDis = 4.5, thickScale = 0,
+  current_section = 0, sections = [], sl = 0
 
 /*
 * parameter for GUI panel
 * TODO: remove in production
 */
 var params = {
-  color: [71,121,158],
+  color: [71, 121, 158],
   particlesSize: 30,
-  particlesRand: 6.4,
+  particlesRand: 1.5,
   exposure: 1,
   bloomThreshold: 0.49,
   bloomStrength: 2.2,
   bloomRadius: 0.72,
   rotateY: 0,
-  ifRotation : true
+  ifRotation: true
 };
 
 /*
 * WEBGL Supportive detect
 */
-if (WEBGL.isWebGLAvailable() === true) {
-  // User can have full exprience with WebGl, go to WEBGL init()
-  init();
-  animate();
-}
-else {
-  // go with low bandwidth option;
-  document.getElementById('flame-container').appendChild(WEBGL.getWebGLErrorMessage());
+
+document.onreadystatechange = function () {
+  if (document.readyState == "interactive") {
+    circlar_timeline.init();
+    sections = document.querySelectorAll("section");
+    sl = sections.length;
+    if (WEBGL.isWebGLAvailable() === true) {
+      // User can have full exprience with WebGl, go to WEBGL init()
+      init();
+      animate();
+    }
+    else {
+      // go with low bandwidth option;
+      document.getElementById('flame-container').appendChild(WEBGL.getWebGLErrorMessage());
+    }
+  }
 }
 
 /*
@@ -65,9 +73,6 @@ else {
 * 5. Add Stats indicator
 * 6. GUI control
 * 7. Add Event Listener, scroll effect binding in next section
-* 8. Add scroll effect
-* 8.1 Create scroll scene for intro
-* 8.2 Create scroll scene for rest of slide
 */
 function init() {
   var container;
@@ -81,7 +86,7 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color("rgb(17,51,128)");
 
-  renderer = new THREE.WebGLRenderer({ antialias: true , alpha: true});
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
@@ -90,12 +95,12 @@ function init() {
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
   // ## shaded martial, uniforms defined in html
   uniforms = {
-    texture:   { value: new THREE.TextureLoader().load("./img/spark1.png") },
-    opacity:   { value: 0 },
-    topColor:  { value: new THREE.Color( 0x0077ff ) },
+    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
+    opacity: { value: 0 },
+    topColor: { value: new THREE.Color(0x0077ff) },
   };
 
-  uniforms.topColor.value.copy( new THREE.Color(params.color[0]/255,params.color[1]/255,params.color[2]/255) );
+  uniforms.topColor.value.copy(new THREE.Color(params.color[0] / 255, params.color[1] / 255, params.color[2] / 255));
 
   var shaderMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
@@ -132,10 +137,10 @@ function init() {
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
-      positions.push((gv[j].x)+Math.random()*Math.sin(j)*params.particlesRand);
-      positions.push((gv[j].y)+Math.random()*Math.sin(j)*params.particlesRand);
-      positions.push((gv[j].z)+Math.random()*Math.sin(j)*params.particlesRand);
-      color.setHSL(204/ 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(Math.random()*j));
+      positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
+      positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
+      positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+      color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(Math.random() * j));
       colors.push(color.r, color.g, color.b);
       sizes.push(Math.random() * params.particlesSize);
     }
@@ -159,11 +164,14 @@ function init() {
       flame.add(shinDot);
       shinDots.push(shinDot);
     }
+    shinDots[0].position.x = -122.28272; shinDots[0].position.y = 257.69856; shinDots[0].position.z = -14.3512;
+    shinDots[1].position.x = 236.0596; shinDots[1].position.y = 107.20472; shinDots[1].position.z = -32.35064;
+    shinDots[2].position.x = 201.63136; shinDots[2].position.y = -112.04424; shinDots[2].position.z = -0.85064;
+    shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064
 
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
     flame.rotateY(-0.3);
-    flame.position.y=-30;
     flame.scale.multiplyScalar(2);
     flame.onAfterRender = animateFlame;
     scene.add(flame);
@@ -171,14 +179,17 @@ function init() {
     // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
       -windowHalfX / 2 + 100,
-      60,
+      80,
       1000)); // first position is the start position
+    // >> Start
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
-        shinDots[i].position.x + flame.position.x,
-        shinDots[i].position.y,
-        150));
+        shinDots[i].position.x - windowHalfX / 4 + 250 ,
+        shinDots[i].position.y + windowHalfY / 2,
+        100));
     }
+    camera.position.x = -windowHalfX / 2 + 100;
+    camera.position.y = 100;
 
     // 3.6 Start Flame rotation
     flameRotation();
@@ -210,110 +221,12 @@ function init() {
   // 6. GUI control
   // https://github.com/dataarts/dat.gui && http://workshop.chromeexperiments.com/examples/gui/#1--Basic-Usage
   // TODO: Remove GUI control in real products
-  var gui = new dat.GUI();
-  var f1 = gui.addFolder('flame shape and color');
-  f1.addColor(params, 'color').onChange(function (value) {
-    uniforms.topColor.value = new THREE.Color(value[0]/255,value[1]/255,value[2]/255)
-  })
-  f1.add(params, 'particlesSize', 10, 50).step(2).onChange(function (value) {
-    params.particlesSize = Number(value);
-    var sizes=flameGeometry.attributes.size.array
-    for (var i = 0; i < particles; i++) {
-      sizes[i] = Math.random() * params.particlesSize;
-    }
-    flameGeometry.attributes.size.needsUpdate = true;
-  });
-  f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
-    params.particlesRand =  Number(value);
-    var positions = flameGeometry.attributes.position.array
-    for (var j = 0; j < particles; j++) {
-      positions[j*3]=(gv[j].x)+Math.random()*Math.sin(j)*params.particlesRand;
-      positions[j*3+1]=(gv[j].y)+Math.random()*Math.sin(j)*params.particlesRand;
-      positions[j*3+2]=(gv[j].z)+Math.random()*Math.sin(j)*params.particlesRand;
-    }
-    flameGeometry.attributes.position.needsUpdate = true;
-  });
-  var f2 = gui.addFolder('brightness and bloom effect');
-  f2.add(params, 'exposure', 0.1, 2).onChange(function (value) {
-    renderer.toneMappingExposure = Math.pow(value, 4.0);
-  });
-  f2.add(params, 'bloomThreshold', 0.0, 1.0).onChange(function (value) {
-    bloomPass.threshold = Number(value);
-  });
-  f2.add(params, 'bloomStrength', 0.0, 3.0).onChange(function (value) {
-    bloomPass.strength = Number(value);
-  });
-  f2.add(params, 'bloomRadius', 0.0, 1.0).step(0.01).onChange(function (value) {
-    bloomPass.radius = Number(value);
-  });
-  var f3 = gui.addFolder('flame rotation')
-  f3.add(params, 'rotateY', -1.0, 1.0).step(0.01).onChange(function (value) {
-    flame.rotation.y = Number(value);
-  });
-  f3.add(params, 'ifRotation').onChange(function(value){
-    if(value){
-      flameRotation();
-    }else{
-      flameRotationStop();
-    }
-  })
-
+  addGuiControl();
 
   // 7. Add EventListener
   window.addEventListener('resize', onWindowResize, false);
+  window.addEventListener('wheel', wheel_control);
 
-  // 8. Add scroll effect
-  // http://scrollmagic.io/
-  var controller = new ScrollMagic.Controller();
-  var slides = document.querySelectorAll("section");
-
-  // Create Scene from Section intro
-  new ScrollMagic.Scene({
-    triggerElement: "#section0",
-    duration: SCREEN_HEIGHT,
-    triggerHook: 0
-  })
-    .on('progress', function (e) {
-      cameraInter = 0
-      //console.log("Scroll on intro in progress:"+e.progress)
-      scrollProgress = e.progress;
-    })
-    .on('leave', function (e) {
-      //flameRotationStop();
-      //document.querySelectorAll("section")[0].classList.remove("fade-in");
-      //scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
-    })
-    .on('enter', function (e) {
-      //flameRotation();
-      //document.querySelectorAll("section")[0].classList.add("fade-in");
-    })
-    .addIndicators({}) // add indicators (requires plugin)
-    .addTo(controller);
-
-  // Create scene for the rest slide
-   for (var l = 1; l < slides.length; l++) {
-    new ScrollMagic.Scene({
-      triggerElement: "#section" + l,
-      duration: 2,
-      triggerHook: 0
-    })
-      .setClassToggle("#section" + l, "fade-in")
-      .on('progress', function (e) {
-        console.log("Scroll on the rest in progress:" + e);
-        cameraInter = Math.floor((window.pageYOffset + windowHalfY + 10) / SCREEN_HEIGHT);
-        scrollProgress = e.progress;
-      })
-      .on('start', function (e) {
-      })
-      .on('enter', function(e){
-        console.log("Scroll on the rest in enter:" + e);
-        //scrollToTween(0,SCREEN_HEIGHT+1,{duration:5000});
-      })
-      .on('end', function(e){
-      })
-      .addIndicators() // add indicators (requires plugin)
-      .addTo(controller);
-  }
 } // End of init()
 
 function animate() {
@@ -324,12 +237,6 @@ function animate() {
 }
 
 function render() {
-  if (cameraPositions[cameraInter + 1] !== undefined && scrollProgress < 1) {
-    camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter + 1].x - cameraPositions[cameraInter].x) * scrollProgress;
-    camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter + 1].y - cameraPositions[cameraInter].y) * scrollProgress;
-    camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter + 1].z - cameraPositions[cameraInter].z) * scrollProgress;
-  }
-
   if (flame !== undefined) {
     if (introPlayed !== 1) { playIntro(); }
   }
@@ -341,23 +248,25 @@ function render() {
 */
 function playIntro() {
   //Todo: Detail the intro
-  window.scrollTo(0,0);
   introPlayed = 1;
   document.querySelectorAll("section")[0].classList.add("fade-in");
   document.getElementsByClassName("scroll_down")[0].classList.add("fade-in");
-  new TWEEN.Tween(flame.material.uniforms.opacity).to({ value: 1 }, 2000)
+  new TWEEN.Tween(flame.material.uniforms.opacity).to({ value: 1 }, 4000)
     .easing(TWEEN.Easing.Quadratic.Out)
-    .onUpdate(function (){
-      flame.position.y +=0.1;
-    })
+    .onUpdate(function () {})
     .start();
+  animateVector3(camera.position, cameraPositions[0], {
+    duration: 4000,
+    easing: TWEEN.Easing.Quadratic.InOut,
+    callback: function () { flameRotation() }
+  })
 }
 
 function animateFlame() {
-  var time = Date.now() * 0.002;
+  // var time = Date.now() * 0.002;
   var sizes = flameGeometry.attributes.size.array;
-  var fp = flameGeometry.attributes.position.array
-  for (var i = 0; i < particles; i+= Math.floor(1500*Math.random())) {
+  // var fp = flameGeometry.attributes.position.array
+  for (var i = 0; i < particles; i += Math.floor(1500 * Math.random())) {
     sizes[i] = Math.random() * params.particlesSize;
     //sizes[i] = 20 * (1+Math.sin(time));
     //sizes[i] = 12 * (1 + Math.sin(time + fp[i * 3] * 0.01) * Math.random());
@@ -380,26 +289,31 @@ function flameRotation() {
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
     rotateTweenL.start();
-  }else if(rotateTweenL && rotateTweenR){
+  } else if (rotateTweenL && rotateTweenR) {
     rotateTweenL.start();
   }
 }
+
 /*
 * Stop the flame shimm
 */
 function flameRotationStop() {
   console.log("flame stop rotation");
-  if (rotateTweenL || rotateTweenR){
+  if (rotateTweenL || rotateTweenR) {
     rotateTweenL.stop();
     rotateTweenR.stop();
   }
 }
-
+/**
+ * Init animation move camera to destination
+ * @param {int} i camera position
+ */
 function moveCamera(i) {
   flameRotationStop();
   if (i === undefined) {
     i = cameraInter;
   }
+  console.log(cameraPositions[i]);
   moveCameraTween = animateVector3(camera.position, cameraPositions[i], {
     duration: 1000,
     easing: TWEEN.Easing.Quadratic.InOut,
@@ -415,7 +329,6 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
 
 /*
  * Animates a Vector3 to the target
@@ -445,30 +358,109 @@ function animateVector3(vectorToAnimate, target, options) {
   // return the tween in case we want to manipulate it later on
   return tweenVector3;
 }
+
 /**
- * Scroll to `(x, y)`.
- * @param {Number} x
- * @param {Number} y
- * @param {options}  ease: 'out-bounce', duration: 1500y
+ * Event handler for Wheel
+ * @param {Event} e
  */
-function scrollToTween(x, y, options) {
-  options = options || {};
-
-  // start position
-  var start = {
-    left: window.pageXOffset || window.scrollX,
-    top: window.pageYOffset || window.scrollY
-  },
-   easing = options.easing || TWEEN.Easing.Quadratic.In,
-   duration = options.duration || 2000;
-
-  //setup tween
-  var tween = new TWEEN.Tween(start)
-    .to({ left: x, top: y }, duration)
-    .easing(easing)
-    .onUpdate(function(o){
-      window.scrollTo(o.left | 0, o.top | 0);
-    })
-  tween.start();
-  return tween;
+function wheel_control(e) {
+  if (e.deltaY < 0) {
+    console.log('scrolling up:::' + "current_section:" + current_section);
+    if (current_section > 0) {
+      if (current_section === 1) {
+        circlar_timeline.hideDot();
+      }
+      if (current_section >= sl - 2) {
+        document.getElementsByClassName("scroll_down")[0].classList.add("fade-in");
+      }
+      sections[current_section].classList.remove('fade-in');
+      sections[current_section].classList.add('fade-out');
+      current_section--;
+      if (current_section > 0) {
+        circlar_timeline.setDot(current_section - 1);
+      }
+      moveCamera(current_section);
+      sections[current_section].classList.remove('fade-out');
+      sections[current_section].classList.add('fade-in');
+    } else {
+      return 0;
+    }
+  }
+  if (e.deltaY > 0) {
+    console.log('scrolling down:::' + "current_section:" + current_section);
+    if (current_section < sl - 1) {
+      if (current_section === 0) {
+        circlar_timeline.showDot();
+      }
+      if (current_section === sl - 2) {
+        document.getElementsByClassName("scroll_down")[0].classList.remove("fade-in");
+      }
+      circlar_timeline.setDot(current_section);
+      sections[current_section].classList.remove('fade-in');
+      sections[current_section].classList.add('fade-out');
+      current_section++;
+      moveCamera(current_section);
+      sections[current_section].classList.remove('fade-out');
+      sections[current_section].classList.add('fade-in');
+    } else {
+      return 0;
+    }
+  }
 }
+/**
+ * Add Gui control in init
+ * @param
+ * TODO: remove in real product
+ */
+function addGuiControl() {
+  var gui = new dat.GUI();
+  var f1 = gui.addFolder('flame shape and color');
+  f1.addColor(params, 'color').onChange(function (value) {
+    uniforms.topColor.value = new THREE.Color(value[0] / 255, value[1] / 255, value[2] / 255)
+  })
+  f1.add(params, 'particlesSize', 10, 50).step(2).onChange(function (value) {
+    params.particlesSize = Number(value);
+    var sizes = flameGeometry.attributes.size.array
+    for (var i = 0; i < particles; i++) {
+      sizes[i] = Math.random() * params.particlesSize;
+    }
+    flameGeometry.attributes.size.needsUpdate = true;
+  });
+  f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
+    params.particlesRand = Number(value);
+    var positions = flameGeometry.attributes.position.array
+    for (var j = 0; j < particles; j++) {
+      positions[j * 3] = (gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand;
+      positions[j * 3 + 1] = (gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand;
+      positions[j * 3 + 2] = (gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand;
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  });
+  var f2 = gui.addFolder('brightness and bloom effect');
+  f2.add(params, 'exposure', 0.1, 2).onChange(function (value) {
+    renderer.toneMappingExposure = Math.pow(value, 4.0);
+  });
+  f2.add(params, 'bloomThreshold', 0.0, 1.0).onChange(function (value) {
+    bloomPass.threshold = Number(value);
+  });
+  f2.add(params, 'bloomStrength', 0.0, 3.0).onChange(function (value) {
+    bloomPass.strength = Number(value);
+  });
+  f2.add(params, 'bloomRadius', 0.0, 1.0).step(0.01).onChange(function (value) {
+    bloomPass.radius = Number(value);
+  });
+  var f3 = gui.addFolder('flame rotation')
+  f3.add(params, 'rotateY', -1.0, 1.0).step(0.01).onChange(function (value) {
+    flame.rotation.y = Number(value);
+  });
+  f3.add(params, 'ifRotation').onChange(function (value) {
+    if (value) {
+      flameRotation();
+    } else {
+      flameRotationStop();
+    }
+  })
+}
+
+
+
