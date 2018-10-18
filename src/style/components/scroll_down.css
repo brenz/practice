@@ -6,8 +6,6 @@
   text-align: center;
   opacity: 0;
   z-index: 150;
-  -webkit-transition: all 1.5s ease-out;
-  transition: all 1.5s ease-out;
   -webkit-transform: translateY(10px);
           transform: translateY(10px);
 }
@@ -22,18 +20,6 @@
   width: 40px;
   height: 40px;
   font-size: 30px;
-}
-
-.scroll_down.fade-in {
-  opacity: 1;
-  -webkit-transform: translateY(0);
-          transform: translateY(0);
-}
-
-.scroll_down.fade-out {
-  opacity: 0;
-  -webkit-transform: translateY(10);
-          transform: translateY(10);
 }
 
 .scroll_down .bounce {
