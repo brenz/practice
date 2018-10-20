@@ -2,6 +2,7 @@
  *  @author Hong Zhang hong.x1.zhang@kp.org
  *  KP Circlar_timeline element for KP homepage
  *  Genarate HTML look like this.
+ * Create html element like that
 <div class="circlar_timeline">
   <div class="inactive_circlar"></div>
   <span class="progress-dot played"></span>
@@ -35,6 +36,8 @@ var circlar_timeline = {
       progress_dot.style.right = -6 - 143 + 182 * Math.sin((Math.PI - 2 * alpha) * i / sl + alpha) + "px";
       this.progress_dots.push(progress_dot);
       this.container.appendChild(progress_dot);
+      progress_dot.setAttribute("dot_num", i);
+      progress_dot.addEventListener("click",this.clickHandler);
     }
     this.container.appendChild(inactive_c);
     active_mask.appendChild(active_c);
@@ -43,6 +46,13 @@ var circlar_timeline = {
     active_mask.style.width=39+"px";
     active_mask.style.bottom=284-33+"px"
     this.container.appendChild(active_mask);
+  },
+  clickHandler:function(e){
+    //console.log(e.target.attributes["dot_num"].value);
+    var next_section=e.target.attributes["dot_num"].value;
+    if (current_section != next_section){
+      sectionMovingAnim(current_section,next_section);
+    }
   },
   setDot:function(num){
     console.log("Set this dot to active"+num);

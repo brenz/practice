@@ -44,6 +44,7 @@
     display:block;
     position: absolute;
     z-index: 10;
+    cursor: pointer;
 
     &.active{
       width: 12px;

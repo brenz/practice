@@ -7,7 +7,7 @@
   text-align: center;
   opacity: 0;
   z-index: 150;
-  transition: all 1.5s ease-out;
+
   transform: translateY(10px);
 
   .scroll_text{
@@ -23,14 +23,6 @@
     font-size: 30px;
   }
 
-  &.fade-in{
-    opacity: 1;
-    transform: translateY(0);
-  }
-  &.fade-out{
-    opacity: 0;
-    transform: translateY(10);
-  }
 
   .bounce {
     animation: bounce 2s infinite;
