@@ -441,6 +441,7 @@ template {
   display: block;
   position: absolute;
   z-index: 10;
+  cursor: pointer;
 }
 
 .circlar_timeline .progress-dot.active {
@@ -526,15 +527,6 @@ html {
   color: white;
 }
 
-.homepage section img {
-  width: auto;
-  height: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 50%;
-  border-bottom-right-radius: 50%;
-  border-bottom-left-radius: 0;
-}
-
 .homepage section:nth-of-type(1) {
   z-index: 10;
 }
@@ -548,10 +540,6 @@ html {
     margin-top: 3.25rem;
     font-size: 2.85rem;
   }
-}
-
-.homepage section:nth-of-type(1).fade-out {
-  opacity: 0;
 }
 
 .homepage section:nth-of-type(2) {
@@ -595,22 +583,8 @@ html {
   border-radius: 2rem;
 }
 
-.homepage .console {
-  position: fixed;
-  top: 50px;
-  left: 0;
-  color: white;
-}
-
 .homepage .space {
   min-height: 1px;
-}
-
-.homepage #run {
-  position: absolute;
-  left: 50%;
-  top: 0px;
-  z-index: 5000;
 }
 
 .homepage .divider {
