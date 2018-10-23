@@ -1,7 +1,7 @@
 //Scroll down arrow styles starts here
 .scroll_down{
   position: fixed;
-  bottom: 50px;
+  bottom: 10px;
   left:0px;
   width:100%;
   text-align: center;
@@ -11,16 +11,21 @@
   transform: translateY(10px);
 
   .scroll_text{
-    color:white;
+    color:$white;
     opacity: 1;
   }
 
   .arrow
   {
-    color:white;
+    color:$white;
     width: 40px;
     height: 40px;
     font-size: 30px;
+  }
+  .down_arrow
+  {
+    width: 16.4px;
+    height: 27.5px;
   }
 
 

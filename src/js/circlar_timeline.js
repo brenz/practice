@@ -20,7 +20,8 @@ var circlar_timeline = {
     var sections = document.querySelectorAll("section");
     var sl = sections.length;
     this.container = document.getElementsByClassName("circlar_timeline")[0];
-    this.container.classList.add("hide");
+    //this.container.classList.add("hide");
+    this.container.style.opacity=0;
     var inactive_c = document.createElement("div");
     inactive_c.classList.add("inactive_circlar");
     var active_mask = document.createElement("div");
@@ -31,6 +32,7 @@ var circlar_timeline = {
     for (var i = 1; i < sl; i++) {
       var progress_dot = document.createElement("div");
       progress_dot.classList.add("progress-dot");
+      progress_dot.setAttribute("tabindex", 0)
       var alpha = Math.acos(143 / 182) + 0.25;
       progress_dot.style.bottom = -6 + 182 + 182 * Math.cos((Math.PI - 2 * alpha) * i / sl + alpha) + "px";
       progress_dot.style.right = -6 - 143 + 182 * Math.sin((Math.PI - 2 * alpha) * i / sl + alpha) + "px";
@@ -49,7 +51,7 @@ var circlar_timeline = {
   },
   clickHandler:function(e){
     //console.log(e.target.attributes["dot_num"].value);
-    var next_section=e.target.attributes["dot_num"].value;
+    var next_section=Number(e.target.attributes["dot_num"].value);
     if (current_section != next_section){
       sectionMovingAnim(current_section,next_section);
     }
@@ -61,14 +63,18 @@ var circlar_timeline = {
       this.progress_dots[i].classList.remove("played");
     }
     this.progress_dots[num].classList.add("active");
+    this.progress_dots[num].focus();
     for (var j=0;j<num;j++){
       this.progress_dots[j].classList.add("played");
     }
   },
-  showDot:function(){
+ /* showDot:function(){
     this.container.classList.remove("hide");
   },
   hideDot:function(){
     this.container.classList.add("hide");
+  },*/
+  isShow: function(){
+    return this.container.style.opacity;
   }
 }

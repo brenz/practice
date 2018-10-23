@@ -82,6 +82,7 @@ function init() {
 
   camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
   camera.position.set(0, 0, 1000);
+  //camera.lookAt(0,0,0);
   //camera.position.z = 1000;
 
 
@@ -205,6 +206,8 @@ function init() {
     cameraPositions[4].x = -122.28272; cameraPositions[4].y = -118.68192;
     camera.position.x = -windowHalfX / 2 + 100;
     camera.position.y = 100;
+    //camera.lookAt(-windowHalfX / 2 + 100,100,0);
+
 
     // 3.6 Start Flame rotation
     flameRotation();
@@ -239,9 +242,27 @@ function init() {
   addGuiControl();
 
   // 7. Add EventListener
+  // mouse event listener
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener('wheel', wheel_control);
 
+  document.addEventListener('keyup', function(event) {
+    if (event.code == 'Tab') {
+      var focused = document.activeElement;
+      if (!focused || focused == document.body)
+          focused = null;
+      else if (document.querySelector)
+          focused = document.querySelector(":focus");
+      if(focused.classList[0]==="scroll_down"){
+        var next_section = current_section + 1;
+        sectionMovingAnim(current_section, next_section)
+      }
+      if(focused.classList[0]==="progress-dot" && !focused.classList.contains("active")){
+        var next_section = current_section + 1;
+        sectionMovingAnim(current_section, next_section)
+      }
+    }
+  });
 } // End of init()
 
 function animate() {
@@ -252,7 +273,6 @@ function animate() {
 }
 
 function render() {
-
   if (flame !== undefined) {
     if (introPlayed !== 1) { playIntro(); }
   }
@@ -440,10 +460,7 @@ function sectionMovingAnim(cs, ns) {
   var current_shindot = cs - 1;
   var next_shindot = ns - 1;
   //Todo: revisit the logic
-  if (ns === 0) { // first page dont have right side dot
-    circlar_timeline.hideDot();
-  } else if (ns > 0) { // rest of page set dot position
-    circlar_timeline.showDot();
+  if (ns > 0) { // rest of page set dot position
     circlar_timeline.setDot(ns - 1);
   }
   // Todo: adjust this
@@ -453,7 +470,7 @@ function sectionMovingAnim(cs, ns) {
     easing: 'easeOutQuart'
   });
   moveAnim.add({
-    targets: ["#section" + cs + " h2", "#section" + cs + " span", "#section" + cs + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
+    targets: ["#section" + cs + " h2", "#section" + cs + " .divider", "#section" + cs + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
     opacity: 0,
     translateY: 0,
     offset: 0
@@ -495,6 +512,13 @@ function sectionMovingAnim(cs, ns) {
       offset: 500
     })
   }
+  if (ns === 0) { // first page dont have right side dot
+    moveAnim.add({
+      targets: circlar_timeline.container,
+      opacity: 0,
+      offset: 0
+    })
+  }
   moveAnim.add({ // make the light up the background light
       targets: bloomPass,
       threshold: params.bloomThreshold,
@@ -509,12 +533,19 @@ function sectionMovingAnim(cs, ns) {
     offset: 1500
   })
   moveAnim.add({
-    targets: ["#section" + ns + " h2", "#section" + ns + " span", "#section" + ns + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
+    targets: ["#section" + ns + " h2", "#section" + ns + " .divider", "#section" + ns + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
     opacity: 1,
     translateY: -20,
     offset: 2000
   })
-  if (ns < sl){ // last page dont have scroll down button
+  if (ns > 0 && circlar_timeline.isShow() ==='0') { // right side pin show up
+    moveAnim.add({
+      targets: circlar_timeline.container,
+      opacity: 1,
+      offset: 2000
+    })
+  }
+  if (ns < sl-1){ // last page dont have scroll down button
     moveAnim.add({
       targets: [".scroll_down"],
       opacity: 1,
@@ -581,14 +612,7 @@ function addGuiControl() {
     flameGeometry.attributes.size.needsUpdate = true;
   });
   f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
-    params.particlesRand = Number(value);
-    var positions = flameGeometry.attributes.position.array
-    for (var j = 0; j < particles; j++) {
-      positions[j * 3] = (gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand;
-      positions[j * 3 + 1] = (gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand;
-      positions[j * 3 + 2] = (gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand;
-    }
-    flameGeometry.attributes.position.needsUpdate = true;
+    particlesRandSpread(value);
   });
   var f2 = gui.addFolder('brightness and bloom effect');
   f2.add(params, 'exposure', 0.1, 2).onChange(function (value) {
@@ -622,5 +646,33 @@ function addGuiControl() {
   })
 }
 
+function particlesRandSpread(value){
+  params.particlesRand = Number(value);
+  var positions = flameGeometry.attributes.position.array;
+  for (var j = 0; j < particles; j++) {
+    positions[j * 3] = (gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand;
+    positions[j * 3 + 1] = (gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand;
+    positions[j * 3 + 2] = (gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand;
+  }
+  flameGeometry.attributes.position.needsUpdate = true;
+}
 
+function particlesRandSpreadTween(value){
+  params.particlesRand = Number(value);
+  var positions = flameGeometry.attributes.position.array;
+  for (var j = 0; j < particles; j++) {
+    var spreadX = new TWEEN.Tween(positions[j*3])
+      .to((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand)
+      .onUpdate(function(){
+        flameGeometry.attributes.position.needsUpdate = true;
+      });
+    var spreadY = new TWEEN.Tween(positions[j*3 + 1])
+      .to((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
+    var spreadZ = new TWEEN.Tween(positions[j*3 + 2])
+      .to((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+    spreadX.chain(spreadY);
+    spreadX.chain(spreadZ);
+    spreadX.start()
+  }
 
+}

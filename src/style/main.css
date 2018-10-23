@@ -485,7 +485,8 @@ html {
 .homepage {
   margin: 0px;
   overflow-x: hidden;
-  font-family: "Montserrat",'Gotham', 'Verdana', 'Avenir';
+  overflow-y: hidden;
+  font-family: "Montserrat", "Gotham", "Verdana", "Avenir";
   font-size: 100%;
   height: 100vh;
 }
@@ -509,22 +510,40 @@ html {
 }
 
 .homepage section h1 {
-  color: white;
-  font-size: 3rem;
+  color: #ffffff;
 }
 
 .homepage section h2 {
-  font-size: 40px;
-  line-height: 1.25em;
-  font-weight: bold;
-  color: white;
+  color: #ffffff;
+}
+
+.homepage section span {
+  font-family: "Montserrat", "Gotham", "Verdana", "Avenir";
+  font-size: 16px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1;
+  letter-spacing: 0.4px;
+  color: #ffffff;
+}
+
+.homepage section span.home_button_arrow {
+  content: url("../img/right_arrow.png");
+  margin-left: 7px;
 }
 
 .homepage section p {
+  width: 451px;
+  height: 96px;
+  font-family: "Montserrat", "Gotham", "Verdana", "Avenir";
   font-size: 22px;
-  line-height: 1em;
   font-weight: normal;
-  color: white;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.45;
+  letter-spacing: normal;
+  color: #ffffff;
 }
 
 .homepage section:nth-of-type(1) {
@@ -564,7 +583,7 @@ html {
 
 .homepage section:nth-of-type(5) {
   z-index: 5;
-  background-color: rgba(51, 51, 51, 0.5);
+  background-color: rgba(51, 51, 51, 0.25);
 }
 
 .homepage #flame-container {
@@ -572,13 +591,14 @@ html {
   top: 0;
   left: 0;
   z-index: -1000;
+  margin: 0;
 }
 
 .homepage button {
   background: transparent;
-  border: 1.6px solid white;
+  border: 1.6px solid #ffffff;
   padding: 0.5rem 1rem;
-  color: white;
+  color: #ffffff;
   font-size: 1rem;
   border-radius: 2rem;
 }
