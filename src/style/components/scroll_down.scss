@@ -11,6 +11,8 @@
   transform: translateY(10px);
 
   .scroll_text{
+    font-family: Circular;
+    font-size:18px;
     color:$white;
     opacity: 1;
   }
@@ -22,6 +24,7 @@
     height: 40px;
     font-size: 30px;
   }
+
   .down_arrow
   {
     width: 16.4px;

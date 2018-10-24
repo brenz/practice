@@ -138,7 +138,7 @@ function init() {
     for (var i = 0; i < thickNess; i++) {
       //var scaleSize = 1 + thickScale* Math.sin(i / thickNess * Math.PI);
       //var scaleSize = 1 - thickScale* Math.sin(i / thickNess * Math.PI);
-      var scaleSize = 1 - i * thickScale ;
+      var scaleSize = 1 - i * thickScale;
       g.merge(gg.clone().translate(0, 0, thickNess * thickDis / 2 - i * thickDis).scale(scaleSize, scaleSize, scaleSize));
     }
     gv = g.vertices
@@ -151,7 +151,7 @@ function init() {
       positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
       color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(Math.random() * j));
       colors.push(color.r, color.g, color.b);
-      sizes.push( Math.random() * params.particlesSize);
+      sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery
     flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -173,16 +173,16 @@ function init() {
       shinDot.scale.multiplyScalar(0.01);
       shinDots.push(shinDot);
     }
-    shinDots[0].position.x = -102.28272; shinDots[0].position.y = 267.69856; shinDots[0].position.z = -14.3512;
-    shinDots[1].position.x = 200.0596; shinDots[1].position.y = 107.20472; shinDots[1].position.z = -32.35064;
-    shinDots[2].position.x = 201.63136; shinDots[2].position.y = -112.04424; shinDots[2].position.z = -0.85064;
+    shinDots[0].position.x = -82.28272; shinDots[0].position.y = 247.69856; shinDots[0].position.z = -24.3512;
+    shinDots[1].position.x = 150.0596; shinDots[1].position.y = 107.20472; shinDots[1].position.z = -32.35064;
+    shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064;
     shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064
 
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
     flame.rotateY(-0.3);
     flame.scale.multiplyScalar(2);
-    flame.onAfterRender = animateFlame;
+    //flame.onAfterRender = animateFlame;
     scene.add(flame);
 
     // 3.5 Define animation destination, defer cameraPositions
@@ -195,23 +195,17 @@ function init() {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x - windowHalfX / 4 + 250,
         shinDots[i].position.y + windowHalfY / 2,
-        100));
-/*         shinDots[i].position.x,
-        shinDots[i].position.y,
-        100)); */
+        50));
     }
-    cameraPositions[1].x = -90; cameraPositions[1].y = 530;
-    cameraPositions[2].x = 236.0596; cameraPositions[2].y = 107.20472;
-    cameraPositions[3].x = 201.63136; cameraPositions[3].y = -112.04424;
-    cameraPositions[4].x = -122.28272; cameraPositions[4].y = -118.68192;
+    cameraPositions[1].x = -60; cameraPositions[1].y = 500;
+    cameraPositions[2].x = 360.0596; cameraPositions[2].y = 217.20472;
+    cameraPositions[3].x = 261.63; cameraPositions[3].y = -262.044;
+    cameraPositions[4].x = -132.282; cameraPositions[4].y = -238.68192;
     camera.position.x = -windowHalfX / 2 + 100;
     camera.position.y = 100;
-    //camera.lookAt(-windowHalfX / 2 + 100,100,0);
-
 
     // 3.6 Start Flame rotation
     flameRotation();
-
   }) // End of load callback
 
   // 4. Add post processing effect:
@@ -246,21 +240,37 @@ function init() {
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener('wheel', wheel_control);
 
-  document.addEventListener('keyup', function(event) {
-    if (event.code == 'Tab') {
+  document.addEventListener('keyup', function (event) {
+    if (event.code === 'Tab') {
       var focused = document.activeElement;
       if (!focused || focused == document.body)
-          focused = null;
+        focused = null;
       else if (document.querySelector)
-          focused = document.querySelector(":focus");
-      if(focused.classList[0]==="scroll_down"){
+        focused = document.querySelector(":focus");
+      if (focused.classList[0] === "scroll_down") {
         var next_section = current_section + 1;
         sectionMovingAnim(current_section, next_section)
       }
-      if(focused.classList[0]==="progress-dot" && !focused.classList.contains("active")){
+      if (focused.classList[0] === "progress-dot" && !focused.classList.contains("active")) {
         var next_section = current_section + 1;
         sectionMovingAnim(current_section, next_section)
       }
+    }
+    if (event.code === 'ArrowDown') {
+      camera.position.y += 10;
+      console.log(camera.position);
+    }
+    if (event.code === 'ArrowUp') {
+      camera.position.y -= 10;
+      console.log(camera.position);
+    }
+    if (event.code === 'ArrowLeft') {
+      camera.position.x -= 10;
+      console.log(camera.position);
+    }
+    if (event.code === 'ArrowRight') {
+      camera.position.x += 10;
+      console.log(camera.position);
     }
   });
 } // End of init()
@@ -268,6 +278,9 @@ function init() {
 function animate() {
   requestAnimationFrame(animate);
   render();
+  if (flameGeometry.attributes.size){
+    animateFlame();
+  }
   TWEEN.update();
   stats.update();
 }
@@ -312,17 +325,31 @@ function playIntro() {
 function animateFlame() {
   var time = Date.now() * 0.002;
   var sizes = flameGeometry.attributes.size.array;
-  var fp = flameGeometry.attributes.position.array
-  for (var i = 0; i < particles; i += Math.floor(1500 * Math.random())) {
-    //Todo: think about a better animation method
-    if (camera.position.z>800){
-      //sizes[i] = Math.random() * params.particlesSize;
-      sizes[i] =  Math.random() * params.particlesSize;
+  var positions = flameGeometry.attributes.position.array;
+  //var fp = flameGeometry.attributes.position.array
+  if (camera.position.z > 800) {
+    for (var i = 0; i < particles; i += Math.floor(1500 * Math.random())) {
+      //Todo: think about a better animation method
+      sizes[i] = Math.random() * params.particlesSize;
     }
-    //sizes[i] = params.particlesSize * (1+Math.sin(time));
-    //sizes[i] = params.particlesSize * (1 + Math.sin(time + fp[i * 3] * 0.1));
+    flameGeometry.attributes.size.needsUpdate = true;
   }
-  flameGeometry.attributes.size.needsUpdate = true;
+  /*if (camera.position.z < 900) {
+    for (var j = 0; j < particles; j++) {
+      if (Math.abs(positions[j * 3]) < Math.abs(gv[j].x * 2)) { positions[j * 3] += gv[j].x / 100 }
+      if (Math.abs(positions[j * 3 + 1]) < Math.abs(gv[j].y * 2)) { positions[j * 3 + 1] += gv[j].y / 100 }
+      if (Math.abs(positions[j * 3 + 2]) < Math.abs(gv[j].z * 2)) { positions[j * 3 + 2] += gv[j].z / 100 }
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  }
+  if (camera.position.z > 900) {
+    for (var k = 0; k < particles; k++) {
+      if (Math.abs(positions[k * 3]) > Math.abs(gv[k].x)) { positions[k * 3] -= gv[k].x / 100 }
+      if (Math.abs(positions[k * 3 + 1]) > Math.abs(gv[k].y )) { positions[k * 3 + 1] -= gv[k].y / 100 }
+      if (Math.abs(positions[k * 3 + 2]) > Math.abs(gv[k].z )) { positions[k * 3 + 2] -= gv[k].z / 100 }
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  }*/
 }
 
 /*
@@ -361,14 +388,8 @@ function flameRotationStop() {
  */
 function moveCamera(i) {
   //flameRotationStop();
-
   if (i === undefined) {
     i = cameraInter;
-  }
-  //console.log(cameraPositions[i]);
-  //console.log(shinDots[i-1].position);
-  if (shinDots[i-1]){
-    //camera.lookAt(shinDots[i-1].position);
   }
   moveCameraTween = animateVector3(camera.position, cameraPositions[i], {
     duration: 3000,
@@ -467,10 +488,11 @@ function sectionMovingAnim(cs, ns) {
   // Todo: revisit the timeline
   var moveAnim = anime.timeline({
     duration: 2000,
-    easing: 'easeOutQuart'
+    easing: 'easeOutQuart',
+    elasticity: 0
   });
   moveAnim.add({
-    targets: ["#section" + cs + " h2", "#section" + cs + " .divider", "#section" + cs + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
+    targets: ["#section" + cs + " h2", "#section" + cs + " .divider", "#section" + cs + " p", "#section" + cs + " h1", "#section" + cs + " button"],
     opacity: 0,
     translateY: 0,
     offset: 0
@@ -489,21 +511,13 @@ function sectionMovingAnim(cs, ns) {
   // TODO: adujust image shrink logic
   moveAnim.add({
     targets: ["#section" + cs + " img"],
-    height: [
-      { value: SCREEN_HEIGHT, duration: 800, delay: 0, elasticity: 0 },
-      { value: 500, duration: 1200, delay: 0, elasticity: 0 },
-      { value: 10, duration: 0, delay: 0, elasticity: 0 }
-    ],
-    width: [
-      { value: SCREEN_HEIGHT / 1020 * 721, duration: 800, delay: 0, elasticity: 0 },
-      { value: 500, duration: 1200, delay: 0, elasticity: 0 },
-      { value: 10, duration: 0, delay: 0, elasticity: 0 }
-    ],
+    height: 0,
+    width: 0,
     opacity: 0,
-    translateX: [0, windowHalfX],
-    translateY: [0, -0.5 * windowHalfY],
+    translateX: [0, 400],
     borderRadius: ['0em', '200em'],
-    offset: 500
+    offset: 0,
+    duration: 800
   })
   if (current_shindot >= 0) { // first page dont have shindot can shrink
     moveAnim.add({
@@ -520,9 +534,9 @@ function sectionMovingAnim(cs, ns) {
     })
   }
   moveAnim.add({ // make the light up the background light
-      targets: bloomPass,
-      threshold: params.bloomThreshold,
-      offset: 900
+    targets: bloomPass,
+    threshold: params.bloomThreshold,
+    offset: 900
   })
 
   // fade out currect section done
@@ -530,64 +544,78 @@ function sectionMovingAnim(cs, ns) {
   moveAnim.add({
     targets: ["#section" + ns],
     opacity: 1,
-    offset: 1500
+    offset: 2000
   })
   moveAnim.add({
-    targets: ["#section" + ns + " h2", "#section" + ns + " .divider", "#section" + ns + " p", "#section"+ cs + " h1", "#section"+ cs + " button"],
+    targets: ["#section" + ns + " h2", "#section" + ns + " .divider", "#section" + ns + " p", "#section" + cs + " h1", "#section" + cs + " button"],
     opacity: 1,
     translateY: -20,
     offset: 2000
   })
-  if (ns > 0 && circlar_timeline.isShow() ==='0') { // right side pin show up
+  if (ns > 0 && circlar_timeline.isShow() === '0') { // right side pin show up
     moveAnim.add({
       targets: circlar_timeline.container,
       opacity: 1,
-      offset: 2000
+      offset: 2500
     })
   }
-  if (ns < sl-1){ // last page dont have scroll down button
+  if (ns < sl - 1) { // last page dont have scroll down button
     moveAnim.add({
       targets: [".scroll_down"],
       opacity: 1,
       translateY: -20,
-      offset: 2000
-    })
-  }
-  moveAnim.add({
-    targets: ["#section" + ns + " img"],
-    height: [
-      { value: 10, duration: 0, delay: 0, elasticity: 0 },
-      { value: 500, duration: 1200, delay: 0, elasticity: 0 },
-      { value: SCREEN_HEIGHT, duration: 800, delay: 0, elasticity: 0 }
-    ],
-    width: [
-        { value: 10, duration: 0, delay: 0, elasticity: 0 },
-        { value: 500, duration: 1200, delay: 0, elasticity: 0 },
-        { value: SCREEN_HEIGHT / 1020 * 721, duration: 800, delay: 0, elasticity: 0 }
-      ],
-    opacity: 1,
-    translateX: [windowHalfX, 0],
-    translateY: [-0.5 * windowHalfY, 0],
-    borderRadius: ['200em', '0em'],
-    offset: 2000
-  })
-  if (next_shindot >= 0) { // back to first page dont have shindot can expand
-    moveAnim.add({
-      targets: shinDots[next_shindot].scale,
-      x: 1, y: 1, z: 1,
       offset: 2500
     })
   }
-  if (ns !=0){
+
+  moveAnim.add({
+    targets: ["#section" + ns + " img"],
+    height: [
+      { value: 10, duration: 0 },
+      { value: 500, duration: 1200 },
+      { value: SCREEN_HEIGHT, duration: 800 }
+    ],
+    width: [
+      { value: 10, duration: 0 },
+      { value: 500, duration: 1200 },
+      { value: SCREEN_HEIGHT / 1020 * 721, duration: 800 }
+    ],
+    opacity: [
+      { value: 0, duration: 0 },
+      { value: 0.8, duration: 1000 },
+      { value: 1, duration: 1200 }
+    ],
+    translateX: [windowHalfX, 0],
+    translateY: [-0.25 * windowHalfY, 0],
+    borderRadius: [
+      { value: '200em', duration: 0 },
+      { value: '200em', duration: 1200 },
+      { value: 0, duration: 800 }
+    ],
+    offset: 2200,
+    elasticity: 0
+  })
+  if (next_shindot >= 0) { //first page dont have shotDot
+    moveAnim.add({
+      targets: shinDots[next_shindot].scale,
+      x: 1, y: 1, z: 1,
+      offset: (cs === 0 && ns === 1) ? 500 : 2000 // first section show shinedot quicker, rest of section show shinedot slower
+    })
+  }
+  if (ns != 0) {
     moveAnim.add({ // Dim the background light
-      targets:bloomPass,
+      targets: bloomPass,
       threshold: 0.9,
       offset: 2400
     })
   }
-
-
   //flameRotationUp();
+  if (ns == 0) {
+    flameRotation();
+  }
+  if (ns >= 1) {
+    flameRotationStop();
+  }
   moveCamera(ns);
   current_section = ns;
 }
@@ -612,7 +640,7 @@ function addGuiControl() {
     flameGeometry.attributes.size.needsUpdate = true;
   });
   f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
-    particlesRandSpread(value);
+    particlesRandSpread(value, 1);
   });
   var f2 = gui.addFolder('brightness and bloom effect');
   f2.add(params, 'exposure', 0.1, 2).onChange(function (value) {
@@ -646,33 +674,44 @@ function addGuiControl() {
   })
 }
 
-function particlesRandSpread(value){
+function particlesRandSpread(value, density) {
+  if (!density) { density = 100 }
   params.particlesRand = Number(value);
   var positions = flameGeometry.attributes.position.array;
-  for (var j = 0; j < particles; j++) {
+  for (var j = 0; j < particles; j += Math.ceil(density * Math.random())) {
     positions[j * 3] = (gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand;
     positions[j * 3 + 1] = (gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand;
     positions[j * 3 + 2] = (gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand;
   }
   flameGeometry.attributes.position.needsUpdate = true;
 }
+function particlesOutSpread(value, density) {
+  if (!density) { density = 1 }
+  if (!value) { value = 1.1 }
+  var positions = flameGeometry.attributes.position.array;
+  for (var j = 0; j < particles; j += density) {
+    positions[j * 3] += gv[j].x * value;
+    positions[j * 3 + 1] += gv[j].y * value;
+    positions[j * 3 + 2] += gv[j].z * value;
+  }
+  flameGeometry.attributes.position.needsUpdate = true;
+}
 
-function particlesRandSpreadTween(value){
+function particlesRandSpreadTween(value) {
   params.particlesRand = Number(value);
   var positions = flameGeometry.attributes.position.array;
   for (var j = 0; j < particles; j++) {
-    var spreadX = new TWEEN.Tween(positions[j*3])
+    var spreadX = new TWEEN.Tween(positions[j * 3])
       .to((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand)
-      .onUpdate(function(){
+      .onUpdate(function () {
         flameGeometry.attributes.position.needsUpdate = true;
       });
-    var spreadY = new TWEEN.Tween(positions[j*3 + 1])
+    var spreadY = new TWEEN.Tween(positions[j * 3 + 1])
       .to((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
-    var spreadZ = new TWEEN.Tween(positions[j*3 + 2])
+    var spreadZ = new TWEEN.Tween(positions[j * 3 + 2])
       .to((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
     spreadX.chain(spreadY);
     spreadX.chain(spreadZ);
     spreadX.start()
   }
-
 }

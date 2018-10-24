@@ -5,10 +5,6 @@
   z-index: 200;
 }
 
-.circlar_timeline.hide {
-  display: none;
-}
-
 .circlar_timeline .inactive_circlar, .circlar_timeline .active_circlar {
   width: 364px;
   height: 364px;

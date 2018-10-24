@@ -1,10 +1,12 @@
 $white :#ffffff;
-$font: "Montserrat",'Gotham', 'Verdana', 'Avenir';
+$teal_line:#50e3c2;
 
 @import "normalize";
 //------------------------------------------------------------------- Components
+@import "variables/variables";
 @import "components/scroll_down";
 @import "components/circlar_timeline";
+@import "components/title-hgroup";
 
 html{
   height: 100vh;
@@ -13,7 +15,7 @@ html{
   margin: 0px;
   overflow-x: hidden;
   overflow-y: hidden;
-  font-family: $font;
+  font-family: CircularPro;
   font-size:100%;
   height:100vh;
 
@@ -25,14 +27,12 @@ html{
     width: 100%;
     align-items: center;
     opacity: 0;
-    h1{
-      color:$white;
-    }
-    h2 {
-      color:$white;
+    margin:0 ;
+    button#imemerse {
+      padding: 1em 1.375em
     }
     span{
-    font-family: $font;
+    font-family: Circular;
     font-size: 16px;
     font-weight: 300;
     font-style: normal;
@@ -44,11 +44,12 @@ html{
     span.home_button_arrow{
       content:url("../img/right_arrow.png");
       margin-left: 7px;
+      margin-top: 2px;
     }
     p {
     width: 451px;
     height: 96px;
-    font-family: $font;
+    font-family: Circular;
     font-size:22px;
     font-weight: normal;
     font-style: normal;
@@ -120,10 +121,14 @@ html{
   .divider{
     width: 50px;
     height: 5px;
-    background-color: #50e3c2;
+    background-color: $teal_line;
     margin-top:30px;
     margin-bottom:30px;
+    border-radius: 2.5px;
     display: block;
   }
 
+}
+:focus {
+  outline: 0;
 }
