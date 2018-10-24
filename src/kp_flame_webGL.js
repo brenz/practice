@@ -187,9 +187,10 @@ function init() {
 
     // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
-      -windowHalfX / 2 + 100,
+      - windowHalfX/2 + 20,
       50,
       1000)); // first position is the start position
+
     // >> Start
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
@@ -201,8 +202,9 @@ function init() {
     cameraPositions[2].x = 360.0596; cameraPositions[2].y = 217.20472;
     cameraPositions[3].x = 261.63; cameraPositions[3].y = -262.044;
     cameraPositions[4].x = -132.282; cameraPositions[4].y = -238.68192;
-    camera.position.x = -windowHalfX / 2 + 100;
+    camera.position.x = - windowHalfX / 2 + 20;
     camera.position.y = 100;
+
 
     // 3.6 Start Flame rotation
     flameRotation();
@@ -299,9 +301,9 @@ function playIntro() {
   //Todo: Detail the intro
   introPlayed = 1;
   anime({
-    targets: ["#section0 h1", "#section0 button", ".scroll_down"],
+    targets: ["#section0 h1", "#section0 button", ".scroll_down", ".flame_logo"],
     opacity: 1,
-    translateY: -20,
+    translateY: [20,0],
     duration: 2000,
     delay: 1500,
     easing: 'easeOutQuart'
@@ -400,6 +402,9 @@ function moveCamera(i) {
     },
     onComplete: function () {
       window.addEventListener('wheel', wheel_control);
+    },
+    onUpdate: function() {
+      console.log(camera.position);
     }
   })
 }
@@ -456,7 +461,6 @@ function animateVector3(vectorToAnimate, target, options) {
  */
 function wheel_control(e) {
   var next_section;
-
   if (e.deltaY < 0) {
     //console.log('scrolling up:::' + "current_section:" + current_section);
     next_section = current_section - 1;
@@ -511,13 +515,16 @@ function sectionMovingAnim(cs, ns) {
   // TODO: adujust image shrink logic
   moveAnim.add({
     targets: ["#section" + cs + " img"],
-    height: 0,
-    width: 0,
     opacity: 0,
-    translateX: [0, 400],
-    borderRadius: ['0em', '200em'],
     offset: 0,
     duration: 800
+  })
+  moveAnim.add({
+    targets: '#circleimage_mask circle',
+    cx: [0,300],
+    r: [721,0],
+    offset: 0,
+    duration:800
   })
   if (current_shindot >= 0) { // first page dont have shindot can shrink
     moveAnim.add({
@@ -570,30 +577,24 @@ function sectionMovingAnim(cs, ns) {
 
   moveAnim.add({
     targets: ["#section" + ns + " img"],
-    height: [
-      { value: 10, duration: 0 },
-      { value: 500, duration: 1200 },
-      { value: SCREEN_HEIGHT, duration: 800 }
-    ],
-    width: [
-      { value: 10, duration: 0 },
-      { value: 500, duration: 1200 },
-      { value: SCREEN_HEIGHT / 1020 * 721, duration: 800 }
-    ],
-    opacity: [
+    height: [200,SCREEN_HEIGHT],
+    opacity: [{ value: 0, duration: 0 },
+      { value: 0.1, duration: 800 },
+      { value: 1, duration: 1200 }],
+    offset: 2200,
+  })
+  moveAnim.add({
+    targets: '#circleimage_mask circle',
+    cx: [{ value: 300, duration: 0 },
+        { value: 300, duration: 800 },
+        { value: 0, duration: 1200 }],
+    cy: [windowHalfY, windowHalfY],
+    r: [
       { value: 0, duration: 0 },
-      { value: 0.8, duration: 1000 },
-      { value: 1, duration: 1200 }
-    ],
-    translateX: [windowHalfX, 0],
-    translateY: [-0.25 * windowHalfY, 0],
-    borderRadius: [
-      { value: '200em', duration: 0 },
-      { value: '200em', duration: 1200 },
-      { value: 0, duration: 800 }
+      { value: 200, duration: 800 },
+      { value: 721, duration: 1200 }
     ],
     offset: 2200,
-    elasticity: 0
   })
   if (next_shindot >= 0) { //first page dont have shotDot
     moveAnim.add({

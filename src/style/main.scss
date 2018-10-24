@@ -7,6 +7,7 @@ $teal_line:#50e3c2;
 @import "components/scroll_down";
 @import "components/circlar_timeline";
 @import "components/title-hgroup";
+@import "components/flame_logo";
 
 html{
   height: 100vh;
@@ -15,7 +16,7 @@ html{
   margin: 0px;
   overflow-x: hidden;
   overflow-y: hidden;
-  font-family: CircularPro;
+  font-family: Circular;
   font-size:100%;
   height:100vh;
 
@@ -28,18 +29,19 @@ html{
     align-items: center;
     opacity: 0;
     margin:0 ;
+    background-color:rgba($color: #333, $alpha: 0.25);
     button#imemerse {
-      padding: 1em 1.375em
-    }
-    span{
-    font-family: Circular;
-    font-size: 16px;
-    font-weight: 300;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: 1;
-    letter-spacing: 0.4px;
-    color:$white;
+      padding: 0.8em 1.375em;
+      span{
+        font-family: CircularPro;
+        font-size: 16px;
+        font-weight: 900;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1;
+        letter-spacing: 0.4px;
+        color: #ffffff;
+      }
     }
     span.home_button_arrow{
       content:url("../img/right_arrow.png");
@@ -62,40 +64,35 @@ html{
     /* Section intro */
     &:nth-of-type(1){
       z-index: 10;
-      h1 {
-        margin-top:16rem;
+      background-color: transparent;
+      h1{
+        margin-bottom:1.25em;
+        margin-top:0.375em;
       }
       @media only screen and (max-width: 375px){
-        h1{
-          margin-top: 3.25rem;
-          font-size:2.85rem;
-        }
       }
     }
     /* Section 1 */
     &:nth-of-type(2){
       z-index: 9;
-      background-color:rgba($color: #333, $alpha: 0.25);
     }
     /* Section 2 */
     &:nth-of-type(3){
       z-index: 8;
-      background-color:rgba($color: #333, $alpha: 0.25);
+
     }
     /* Section 3 */
     &:nth-of-type(4){
       z-index: 7;
-      background-color:rgba($color: #333, $alpha: 0.25);
+
     }
     /* Section 4 */
     &:nth-of-type(5){
       z-index: 6;
-      background-color:rgba($color: #333, $alpha: 0.25);
     }
     /* Section 5 */
     &:nth-of-type(5){
       z-index: 5;
-      background-color:rgba($color: #333, $alpha: 0.25);
     }
   }
   #flame-container{
@@ -104,6 +101,7 @@ html{
     left:0;
     z-index: -1000;
     margin:0;
+    background-image: linear-gradient(to left, rgba(1, 16, 31, 0), #0d2660);
   }
 
   button {
@@ -128,6 +126,9 @@ html{
     display: block;
   }
 
+}
+.clip-svg{
+  clip-path: url(#circleimage_mask);
 }
 :focus {
   outline: 0;

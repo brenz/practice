@@ -1,0 +1,10 @@
+.flame_logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 54px;
+  background: rgba(255, 255, 255, 0.3);
+  content: url("../img/flame_icon.svg");
+  display: block;
+  padding: 14px 6px;
+}
+/*# sourceMappingURL=flame_logo.css.map */
