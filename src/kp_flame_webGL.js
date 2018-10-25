@@ -16,7 +16,7 @@ var SCREEN_WIDTH = window.innerWidth,
   shinDots = [],
   cameraPositions = [],
   cameraInter = 0,                                // indicate the current camera position
-  rotateTweenL, rotateTweenR, moveCameraTween,    // Tween object
+  rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween,    // Tween object
   introPlayed = 0,
   thickNess = 15, thickDis = 7.5, thickScale = 0.001,
   current_section = 0, sections = [], sl = 0
@@ -30,13 +30,14 @@ var params = {
   particlesSize: 25,
   particlesRand: 1,
   exposure: 1,
-  bloomThreshold: 0.46,
-  bloomStrength: 2.2,
+  bloomThreshold: 0.47,
+  bloomStrength: 1.5,
   bloomRadius: 0.72,
   rotateY: 0,
   rotateX: 0,
   rotateZ: 0,
-  ifRotation: true
+  ifRotation: true,
+  ifPanCross: false,
 };
 
 /*
@@ -84,8 +85,6 @@ function init() {
   camera.position.set(0, 0, 1000);
   //camera.lookAt(0,0,0);
   //camera.position.z = 1000;
-
-
 
   // 1. Create/Define scene and render
   // TODO: create fog and scence stage?
@@ -174,9 +173,9 @@ function init() {
       shinDots.push(shinDot);
     }
     shinDots[0].position.x = -82.28272; shinDots[0].position.y = 247.69856; shinDots[0].position.z = -24.3512;
-    shinDots[1].position.x = 150.0596; shinDots[1].position.y = 107.20472; shinDots[1].position.z = -32.35064;
-    shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064;
-    shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064
+    if(shinDots[1]) { shinDots[1].position.x = 150.0596; shinDots[1].position.y = 107.20472; shinDots[1].position.z = -32.35064; }
+    if(shinDots[2]) { shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064; }
+    if(shinDots[3]) { shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064 }
 
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
@@ -199,9 +198,9 @@ function init() {
         50));
     }
     cameraPositions[1].x = -60; cameraPositions[1].y = 500;
-    cameraPositions[2].x = 360.0596; cameraPositions[2].y = 217.20472;
-    cameraPositions[3].x = 261.63; cameraPositions[3].y = -262.044;
-    cameraPositions[4].x = -132.282; cameraPositions[4].y = -238.68192;
+    if(cameraPositions[2]) { cameraPositions[2].x = 360.0596; cameraPositions[2].y = 217.20472; }
+    if(cameraPositions[3]) { cameraPositions[3].x = 261.63; cameraPositions[3].y = -262.044; }
+    if(cameraPositions[4]) { cameraPositions[4].x = -132.282; cameraPositions[4].y = -238.68192;}
     camera.position.x = - windowHalfX / 2 + 20;
     camera.position.y = 100;
 
@@ -361,11 +360,11 @@ function flameRotation() {
   //console.log("flame start rotation");
   if (!rotateTweenL && !rotateTweenR && flame != undefined) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
-      .to({ y: -0.1 }, 10000)
-      .easing(TWEEN.Easing.Linear.None)
+      .to({ y: -0.1 }, 18000)
+      .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenR = new TWEEN.Tween(flame.rotation)
-      .to({ y: -0.3 }, 10000)
-      .easing(TWEEN.Easing.Linear.None)
+      .to({ y: -0.3 }, 18000)
+      .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
     rotateTweenL.start();
@@ -384,6 +383,33 @@ function flameRotationStop() {
     rotateTweenR.stop();
   }
 }
+
+/*
+* Start the flame Pan Cross
+*/
+function flamePanCross() {
+  //console.log("flame start rotation");
+  if (!rotateTweenZ && flame != undefined) {
+    rotateTweenZ = new TWEEN.Tween(flame.rotation)
+      .to({ z: -0.5 }, 50000)
+      .easing(TWEEN.Easing.Linear.None)
+      rotateTweenZ.start();
+  } else if (rotateTweenZ) {
+    rotateTweenZ.start();
+  }
+}
+
+/*
+* Stop the flame pan Cross
+*/
+function flamePanCrossStop() {
+  //console.log("flame stop rotation");
+  if (rotateTweenZ ) {
+    rotateTweenZ.stop();
+  }
+}
+
+
 /**
  * Init animation move camera to destination
  * @param {int} i camera position
@@ -496,9 +522,9 @@ function sectionMovingAnim(cs, ns) {
     elasticity: 0
   });
   moveAnim.add({
-    targets: ["#section" + cs + " h2", "#section" + cs + " .divider", "#section" + cs + " p", "#section" + cs + " h1", "#section" + cs + " button"],
+    targets: ["#section" + cs + " h2", "#section" + cs + " .divider", "#section" + cs + " .flame_logo","#section" + cs + " p", "#section" + cs + " h1", "#section" + cs + " button"],
     opacity: 0,
-    translateY: 0,
+    translateY: 20,
     offset: 0
   })
   moveAnim.add({ // fade out scroll icon
@@ -530,7 +556,9 @@ function sectionMovingAnim(cs, ns) {
     moveAnim.add({
       targets: shinDots[current_shindot].scale,
       x: 0.01, y: 0.01, z: 0.01,
-      offset: 500
+      offset: 300,
+      duration: 400,
+      easing: 'easeOutCubic'
     })
   }
   if (ns === 0) { // first page dont have right side dot
@@ -554,9 +582,9 @@ function sectionMovingAnim(cs, ns) {
     offset: 2000
   })
   moveAnim.add({
-    targets: ["#section" + ns + " h2", "#section" + ns + " .divider", "#section" + ns + " p", "#section" + cs + " h1", "#section" + cs + " button"],
+    targets: ["#section" + ns + " h2", "#section" + ns + " .divider", "#section" + ns + " .flame_logo", "#section" + ns + " p", "#section" + ns + " h1", "#section" + ns + " button"],
     opacity: 1,
-    translateY: -20,
+    translateY: 0,
     offset: 2000
   })
   if (ns > 0 && circlar_timeline.isShow() === '0') { // right side pin show up
@@ -577,30 +605,36 @@ function sectionMovingAnim(cs, ns) {
 
   moveAnim.add({
     targets: ["#section" + ns + " img"],
-    height: [200,SCREEN_HEIGHT],
+    height:  [{ value: 0, duration: 0 },
+      { value: 200, duration: 400 },
+      { value: SCREEN_HEIGHT, duration: 800 }],
     opacity: [{ value: 0, duration: 0 },
-      { value: 0.1, duration: 800 },
-      { value: 1, duration: 1200 }],
+      { value: 0.1, duration: 700 },
+      { value: 1, duration: 1300 }],
     offset: 2200,
+
   })
   moveAnim.add({
     targets: '#circleimage_mask circle',
     cx: [{ value: 300, duration: 0 },
-        { value: 300, duration: 800 },
-        { value: 0, duration: 1200 }],
+        { value: 300, duration: 700 },
+        { value: 0, duration: 1300 }],
     cy: [windowHalfY, windowHalfY],
     r: [
       { value: 0, duration: 0 },
-      { value: 200, duration: 800 },
-      { value: 721, duration: 1200 }
+      { value: 200, duration: 600 },
+      { value: 721, duration: 1400 }
     ],
     offset: 2200,
+
   })
   if (next_shindot >= 0) { //first page dont have shotDot
     moveAnim.add({
       targets: shinDots[next_shindot].scale,
       x: 1, y: 1, z: 1,
-      offset: (cs === 0 && ns === 1) ? 500 : 2000 // first section show shinedot quicker, rest of section show shinedot slower
+      offset: (cs === 0 && ns === 1) ? 500 : 2000, // first section show shinedot quicker, rest of section show shinedot slower
+      duration:(cs === 0 && ns === 1) ? 3000 : 1500,
+      easing: 'easeInCubic'
     })
   }
   if (ns != 0) {
@@ -671,6 +705,13 @@ function addGuiControl() {
       flameRotation();
     } else {
       flameRotationStop();
+    }
+  })
+  f3.add(params, 'ifPanCross').onChange(function (value) {
+    if (value) {
+      flamePanCross();
+    } else {
+      flamePanCrossStop();
     }
   })
 }

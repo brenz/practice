@@ -448,6 +448,8 @@ template {
   display: block;
   overflow: hidden;
   z-index: 1;
+  -webkit-transition: all 2s ease-out;
+  transition: all 2s ease-out;
 }
 
 .circlar_timeline .progress-dot {
@@ -460,6 +462,12 @@ template {
   position: absolute;
   z-index: 10;
   cursor: pointer;
+  -webkit-transition: all 2s ease-out;
+  transition: all 2s ease-out;
+}
+
+.circlar_timeline .progress-dot:hover {
+  background: #8999BE;
 }
 
 .circlar_timeline .progress-dot.active {
@@ -500,7 +508,7 @@ template {
 - H group
 --------------------------------------------------------------*/
 h1 {
-  font-size: 64px;
+  font-size: 4em;
   font-family: CircularPro;
   font-weight: 900;
   font-style: normal;
@@ -512,7 +520,7 @@ h1 {
 
 h2 {
   font-family: CircularPro;
-  font-size: 40px;
+  font-size: 2.5em;
   font-weight: 900;
   font-style: normal;
   font-stretch: normal;
