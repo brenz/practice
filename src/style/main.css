@@ -349,6 +349,11 @@ template {
   src: url(../fonts/CircularPro-BlackItalic.otf) format("opentype");
 }
 
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .scroll_down {
   position: fixed;
   bottom: 10px;
@@ -562,12 +567,11 @@ h2 {
 .button-default {
   background: transparent;
   border: 1.6px solid #FFFFFF;
-  padding: 0.875em 1.375em 1em 1.375em;
+  padding: 0.875em 2em 1em 2em;
   color: #FFFFFF;
   font-size: 1rem;
   border-radius: 2rem;
-  -webkit-transition: background-position 1s;
-  transition: background-position 1s;
+  cursor: pointer;
 }
 
 .button-default span {
@@ -579,13 +583,30 @@ h2 {
   line-height: 1;
   letter-spacing: 0.4px;
   color: #ffffff;
+  display: block;
 }
 
-.button-default span.right_arrow {
-  content: url("../img/right_arrow.png");
-  margin-left: 5px;
+.button--rightarrow ::after {
+  content: "";
+  background-image: url("../img/rightarrow.svg"), url("../img/rightarrow-long.svg");
+  background-position: 0 0, 0 16px;
+  background-repeat: no-repeat;
+  margin-left: 8px;
   -webkit-transform: translateY(2px);
           transform: translateY(2px);
+  display: inline-block;
+  width: 32px;
+  height: 16px;
+  margin-right: -2.5px;
+}
+
+.button--rightarrow:hover span {
+  margin-left: -2.5px;
+}
+
+.button--rightarrow:hover ::after {
+  margin-right: 0px;
+  background-position: 0 -16px, 0 0;
 }
 
 @media (min-width: 1200px) {
@@ -605,6 +626,10 @@ html {
   font-family: Circular;
   font-size: 100%;
   height: 100vh;
+}
+
+.homepage h1 {
+  font-size: 4em;
 }
 
 .homepage section {

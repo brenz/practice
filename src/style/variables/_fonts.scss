@@ -15,3 +15,8 @@
    font-family: 'CircularPro Italic' ;
    src: url(../fonts/CircularPro-BlackItalic.otf) format('opentype');
  }
+
+ body{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ }

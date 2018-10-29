@@ -18,7 +18,7 @@ var SCREEN_WIDTH = window.innerWidth,
   cameraInter = 0,                                // indicate the current camera position
   rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween, rotateCamereTween,    // Tween object
   introPlayed = 0,
-  thickNess = 15, thickDis = 7.5, thickScale = 0.001,
+  thickNess = 15, thickDis = 14, thickScale = 0.001,
   current_section = 0, sections = [], sl = 0
 
 /*
@@ -27,7 +27,7 @@ var SCREEN_WIDTH = window.innerWidth,
 */
 var params = {
   color: [71, 121, 158],
-  particlesSize: 25,
+  particlesSize: 45,
   particlesRand: 1,
   exposure: 1,
   bloomThreshold: 0.47,
@@ -84,8 +84,8 @@ function init() {
   var container;
   container = document.getElementById('flame-container');
 
-  camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
-  camera.position.set(0, 0, 1000);
+  camera = new THREE.PerspectiveCamera(40, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
+  camera.position.set(0, 0, 2000);
 
   // 1. Create/Define scene and render
   // TODO: create fog and scence stage?
@@ -187,9 +187,9 @@ function init() {
 
     // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
-      -258.6051887873253,
+      -80,
       40,
-      1127.0434991818197)); // first position is the start position
+      2150)); // first position is the start position
 
     cameraRotation.push(new THREE.Vector3(
       -6.292128447463748e-17,
@@ -201,15 +201,15 @@ function init() {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x - windowHalfX / 4 + 250,
         shinDots[i].position.y + windowHalfY / 2,
-        30));
+        40));
         cameraRotation.push(new THREE.Vector3(0,0,0));
     }
 
     // Date stack for camera postion
-    cameraPositions[1].x = -60; cameraPositions[1].y = 500;
-    if(cameraPositions[2]) { cameraPositions[2].x = 380.0596; cameraPositions[2].y = 177.20472; }
-    if(cameraPositions[3]) { cameraPositions[3].x = 231.63; cameraPositions[3].y = -272.044; }
-    if(cameraPositions[4]) { cameraPositions[4].x = -162.28; cameraPositions[4].y = -198.68192;}
+    cameraPositions[1].x = -90; cameraPositions[1].y = 500;
+    if(cameraPositions[2]) { cameraPositions[2].x = 330; cameraPositions[2].y = 165; }
+    if(cameraPositions[3]) { cameraPositions[3].x = 200; cameraPositions[3].y = -270; }
+    if(cameraPositions[4]) { cameraPositions[4].x = -210; cameraPositions[4].y = -200;}
 
     // Data stack for camera rotation
     cameraRotation[1].x = 0; cameraRotation[1].y = 0.31; cameraRotation[1].z = 0;
@@ -631,22 +631,22 @@ function sectionMovingAnim(cs, ns) {
     height:  [{ value: 0, duration: 0 },
       { value: 200, duration: 400 },
       { value: SCREEN_HEIGHT, duration: 800 }],
-    opacity: [{ value: 0, duration: 0 },
-      { value: 0.1, duration: 500 },
-      { value: 1, duration: 800 }],
+    opacity: [{ value: 0, duration: 0 , offset:1000},
+      { value: 0.2, duration: 800 },
+      { value: 1, duration: 400 }],
     offset: 2200,
 
   })
   moveAnim.add({
     targets: '#circleimage_mask circle',
     cx: [{ value: 300, duration: 0 },
-        { value: 300, duration: 700 },
-        { value: 0, duration: 1300 }],
+        { value: 300, duration: 800 },
+        { value: 0, duration: 1200 }],
     cy: [windowHalfY, windowHalfY],
     r: [
       { value: 0, duration: 0 },
-      { value: 200, duration: 600 },
-      { value: 721, duration: 1400 }
+      { value: 200, duration: 800 },
+      { value: 721, duration: 1200 }
     ],
     offset: 2200,
 
