@@ -9,16 +9,16 @@ var SCREEN_WIDTH = window.innerWidth,
   SCREEN_HEIGHT = window.innerHeight,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
-  camera, scene, renderer, composer, stats, bloomPass,
+  camera, scene, renderer, composer, stats, bloomPass, controls,
   uniforms,                                       // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
   flame, flameGeometry, gv = [],
   shinDots = [],
-  cameraPositions = [], cameraRotation = [],
+  cameraPositions = [],
   cameraInter = 0,                                // indicate the current camera position
-  rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween, rotateCamereTween,    // Tween object
+  rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween,    // Tween object
   introPlayed = 0,
-  thickNess = 15, thickDis = 7.5, thickScale = 0.001,
+  thickNess = 15, thickDis = 0.3, thickScale = 0.001,
   current_section = 0, sections = [], sl = 0
 
 /*
@@ -27,8 +27,8 @@ var SCREEN_WIDTH = window.innerWidth,
 */
 var params = {
   color: [71, 121, 158],
-  particlesSize: 25,
-  particlesRand: 1,
+  particlesSize: 1,
+  particlesRand: 0.02,
   exposure: 1,
   bloomThreshold: 0.47,
   bloomStrength: 1.5,
@@ -36,11 +36,12 @@ var params = {
   rotateY: 0,
   rotateX: 0,
   rotateZ: 0,
-  ifRotation: true,
+  ifRotation: false,
   ifPanCross: false,
   cameraRotationX: 0,
   cameraRotationY: 0,
   cameraRotationZ: 0,
+
 };
 
 /*
@@ -84,8 +85,10 @@ function init() {
   var container;
   container = document.getElementById('flame-container');
 
-  camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
-  camera.position.set(0, 0, 1000);
+  camera = new THREE.PerspectiveCamera(40, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 100);
+  camera.position.set(0, 0, 50);
+  //camera.lookAt(0,0,0);
+  //camera.position.z = 1000;
 
   // 1. Create/Define scene and render
   // TODO: create fog and scence stage?
@@ -96,6 +99,11 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.maxPolarAngle = Math.PI * 0.5;
+  controls.minDistance = 1;
+  controls.maxDistance = 100;
 
   // 2 Create Martial, by useing shade matrial
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
@@ -133,7 +141,7 @@ function init() {
   //(start load call back)
   loader.load('./data/KPSM_1D_4.json', function (g, m) {
     // Create 5 layers by normal geomertery
-    g.scale(500, 500, 500);
+    g.scale(15, 15, 15);
     var gg = g.clone()
     for (var i = 0; i < thickNess; i++) {
       //var scaleSize = 1 + thickScale* Math.sin(i / thickNess * Math.PI);
@@ -181,48 +189,38 @@ function init() {
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
     //flame.rotateY(-0.3);
-    flame.scale.multiplyScalar(2);
+    flame.scale.multiplyScalar(1.5);
     //flame.onAfterRender = animateFlame;
     scene.add(flame);
 
     // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
-      -258.6051887873253,
-      40,
-      1127.0434991818197)); // first position is the start position
-
-    cameraRotation.push(new THREE.Vector3(
-      -6.292128447463748e-17,
-      0.23222029191249582,
-      1.4480627862203042e-17)); // first position is the start position
+      2.119355686043688,
+      2.9570374271116,
+      48.111028577450185)); // first position is the start position
 
     // >> Start
     for (var i = 0; i < shinDots.length; i++) {
       cameraPositions.push(new THREE.Vector3(
         shinDots[i].position.x - windowHalfX / 4 + 250,
         shinDots[i].position.y + windowHalfY / 2,
-        30));
-        cameraRotation.push(new THREE.Vector3(0,0,0));
+        10));
     }
-
-    // Date stack for camera postion
     cameraPositions[1].x = -60; cameraPositions[1].y = 500;
-    if(cameraPositions[2]) { cameraPositions[2].x = 380.0596; cameraPositions[2].y = 177.20472; }
-    if(cameraPositions[3]) { cameraPositions[3].x = 231.63; cameraPositions[3].y = -272.044; }
-    if(cameraPositions[4]) { cameraPositions[4].x = -162.28; cameraPositions[4].y = -198.68192;}
+    if(cameraPositions[2]) { cameraPositions[2].x = 360.0596; cameraPositions[2].y = 217.20472; }
+    if(cameraPositions[3]) { cameraPositions[3].x = 261.63; cameraPositions[3].y = -262.044; }
+    if(cameraPositions[4]) { cameraPositions[4].x = -132.282; cameraPositions[4].y = -238.68192;}
+    camera.position.x = 2;
+    camera.position.y = 1.95;
 
-    // Data stack for camera rotation
-    cameraRotation[1].x = 0; cameraRotation[1].y = 0.31; cameraRotation[1].z = 0;
-    if(cameraRotation[2]) { cameraRotation[2].x = 0.38; cameraRotation[2].y = -0.06; cameraRotation[2].z = -0.09;}
-    if(cameraRotation[3]) { cameraRotation[3].x = 0.07; cameraRotation[3].y = -0.37; cameraRotation[3].z = -0.09;}
-    if(cameraRotation[4]) { cameraRotation[4].x = -0.37; cameraRotation[4].y = -0.11; cameraRotation[4].z = -0.02;}
+    camera.rotation.x = -0.036985896349892015
+    camera.rotation.y = 0.3001276749428997
+    camera.rotation.z = 0.010939143287416674
 
-    camera.position.x = -268.62087843140444;
-    camera.position.y = 100;
 
     // 3.6 Start Flame rotation
     if (params.ifRotation){
-    flameRotation();
+      flameRotation();
     }
   }) // End of load callback
 
@@ -275,27 +273,27 @@ function init() {
       }
     }
     if (event.code === 'ArrowDown') {
-      camera.position.y += 10;
+      camera.position.y += 2;
       console.log(camera.position);
     }
     if (event.code === 'ArrowUp') {
-      camera.position.y -= 10;
+      camera.position.y -= 2;
       console.log(camera.position);
     }
     if (event.code === 'ArrowLeft') {
-      camera.position.x -= 10;
+      camera.position.x -= 2;
       console.log(camera.position);
     }
     if (event.code === 'ArrowRight') {
-      camera.position.x += 10;
+      camera.position.x += 2;
       console.log(camera.position);
     }
     if (event.code === 'Escape') {
-      camera.position.z += 10;
+      camera.position.z += 2;
       console.log(camera.position);
     }
     if (event.code === 'Enter') {
-      camera.position.z -= 10;
+      camera.position.z -= 2;
       console.log(camera.position);
     }
   });
@@ -309,6 +307,14 @@ function animate() {
   }
   TWEEN.update();
   stats.update();
+  document.getElementById("control").innerHTML="{camera.postion}: "+
+  "<br/> x:"+camera.position.x+
+  "<br/> y:"+camera.position.y+
+  "<br/> z:"+camera.position.z +
+  "<br/> {camera.rotation}: "+
+  "<br/> x"+camera.rotation.x+
+  "<br/> y:"+camera.rotation.y+
+  "<br/> z:"+camera.rotation.z;
 }
 
 function render() {
@@ -355,10 +361,27 @@ function animateFlame() {
   //var fp = flameGeometry.attributes.position.array
   if (camera.position.z > 800) {
     for (var i = 0; i < particles; i += Math.floor(1500 * Math.random())) {
+      //Todo: think about a better animation method
       sizes[i] = Math.random() * params.particlesSize;
     }
     flameGeometry.attributes.size.needsUpdate = true;
   }
+  /*if (camera.position.z < 900) {
+    for (var j = 0; j < particles; j++) {
+      if (Math.abs(positions[j * 3]) < Math.abs(gv[j].x * 2)) { positions[j * 3] += gv[j].x / 100 }
+      if (Math.abs(positions[j * 3 + 1]) < Math.abs(gv[j].y * 2)) { positions[j * 3 + 1] += gv[j].y / 100 }
+      if (Math.abs(positions[j * 3 + 2]) < Math.abs(gv[j].z * 2)) { positions[j * 3 + 2] += gv[j].z / 100 }
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  }
+  if (camera.position.z > 900) {
+    for (var k = 0; k < particles; k++) {
+      if (Math.abs(positions[k * 3]) > Math.abs(gv[k].x)) { positions[k * 3] -= gv[k].x / 100 }
+      if (Math.abs(positions[k * 3 + 1]) > Math.abs(gv[k].y )) { positions[k * 3 + 1] -= gv[k].y / 100 }
+      if (Math.abs(positions[k * 3 + 2]) > Math.abs(gv[k].z )) { positions[k * 3 + 2] -= gv[k].z / 100 }
+    }
+    flameGeometry.attributes.position.needsUpdate = true;
+  }*/
 }
 
 /*
@@ -391,15 +414,6 @@ function flameRotationStop() {
     rotateTweenR.stop();
   }
 }
-/*
-* Rotate flame back to original position
-*/
-function flameRotateBack() {
-  new TWEEN.Tween(flame.rotation)
-      .to({ y: 0}, 2000)
-      .easing(TWEEN.Easing.Quadratic.InOut)
-      .start();
-}
 
 /*
 * Start the flame Pan Cross
@@ -407,7 +421,7 @@ function flameRotateBack() {
 function flamePanCross() {
   //console.log("flame start rotation");
   if (!rotateTweenZ && flame != undefined) {
-    rotateTweenZ = new TWEEN.Tween(camera.rotation)
+    rotateTweenZ = new TWEEN.Tween(flame.rotation)
       .to({ z: -0.5 }, 50000)
       .easing(TWEEN.Easing.Linear.None)
       rotateTweenZ.start();
@@ -446,30 +460,24 @@ function moveCamera(i) {
     onComplete: function () {
       window.addEventListener('wheel', wheel_control);
     },
-    onUpdate: function(d) {
+    onUpdate: function() {
       console.log(camera.position);
     }
   })
-  rotateCamereTween = animateVector3(camera.rotation, cameraRotation[i],{
-    duration: 3000,
-    easing: TWEEN.Easing.Quadratic.InOut
-  })
+}
+function flameRotationUp() {
+  var flameRotationTween = new TWEEN.Tween(flame.rotation)
+    .to({ x: 0.05, y: -0.45 }, 3000)
+    .easing(TWEEN.Easing.Quartic.Out);
+  flameRotationTween.start();
 }
 
 function onWindowResize() {
   windowHalfX = window.innerWidth / 2;
   windowHalfY = window.innerHeight / 2;
-  SCREEN_HEIGHT = window.innerHeight;
-  SCREEN_WIDTH = window.innerWidth;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-
-  anime({
-    targets: ["#section" + current_section + " img"],
-    height: SCREEN_HEIGHT,
-    duration: 0
-  })
 }
 
 /*
@@ -632,8 +640,8 @@ function sectionMovingAnim(cs, ns) {
       { value: 200, duration: 400 },
       { value: SCREEN_HEIGHT, duration: 800 }],
     opacity: [{ value: 0, duration: 0 },
-      { value: 0.1, duration: 500 },
-      { value: 1, duration: 800 }],
+      { value: 0.1, duration: 700 },
+      { value: 1, duration: 1300 }],
     offset: 2200,
 
   })
@@ -673,7 +681,6 @@ function sectionMovingAnim(cs, ns) {
   }
   if (ns >= 1) {
     flameRotationStop();
-    flameRotateBack();
   }
   moveCamera(ns);
   current_section = ns;
@@ -690,7 +697,7 @@ function addGuiControl() {
   f1.addColor(params, 'color').onChange(function (value) {
     uniforms.topColor.value = new THREE.Color(value[0] / 255, value[1] / 255, value[2] / 255)
   })
-  f1.add(params, 'particlesSize', 10, 50).step(2).onChange(function (value) {
+  f1.add(params, 'particlesSize', 1, 50).step(1).onChange(function (value) {
     params.particlesSize = Number(value);
     var sizes = flameGeometry.attributes.size.array
     for (var i = 0; i < particles; i++) {
@@ -698,7 +705,7 @@ function addGuiControl() {
     }
     flameGeometry.attributes.size.needsUpdate = true;
   });
-  f1.add(params, 'particlesRand', 0.1, 12).step(0.1).onChange(function (value) {
+  f1.add(params, 'particlesRand', 0.01, 12).step(0.01).onChange(function (value) {
     particlesRandSpread(value, 1);
   });
   var f2 = gui.addFolder('brightness and bloom effect');

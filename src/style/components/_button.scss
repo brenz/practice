@@ -12,9 +12,35 @@
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   text-align: center;
   font-size: 14px;
-  @include transition(0.3s);
 }
 
 .button {
   @extend .button-style;
+}
+
+.button-default{
+  background: transparent;
+  border: 1.6px solid $white;
+  padding: 0.875em 1.375em 1em 1.375em;
+  color:$white;
+  font-size: 1rem;
+  border-radius: 2rem;
+  transition: background-position 1s;
+
+  span{
+    font-family: CircularPro;
+    font-size: 1rem;
+    font-weight: 900;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    color: #ffffff;
+  }
+
+  span.right_arrow{
+    content:url("../img/right_arrow.png");
+    margin-left: 5px;
+    transform: translateY(2px);
+  }
 }

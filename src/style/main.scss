@@ -8,7 +8,13 @@ $teal_line:#50e3c2;
 @import "components/circlar_timeline";
 @import "components/title-hgroup";
 @import "components/flame_logo";
+@import "components/button";
 
+@media (min-width: 1200px){
+  .container {
+      max-width: 1160px;
+  }
+}
 html{
   height: 100vh;
 }
@@ -20,6 +26,10 @@ html{
   font-size:100%;
   height:100vh;
 
+  h1{
+    font-size: 4em;
+  }
+
   section {
     position: absolute;
     top:0px;
@@ -30,23 +40,9 @@ html{
     opacity: 0;
     margin:0 ;
     background-color:rgba($color: #333, $alpha: 0.25);
-    button#imemerse {
-      padding: 0.8em 1.375em;
-      span{
-        font-family: CircularPro;
-        font-size: 16px;
-        font-weight: 900;
-        font-style: normal;
-        font-stretch: normal;
-        line-height: 1;
-        letter-spacing: 0.4px;
-        color: #ffffff;
-      }
-    }
-    span.home_button_arrow{
-      content:url("../img/right_arrow.png");
-      margin-left: 7px;
-      margin-top: 2px;
+
+    .row{
+      height:calc(100vh);
     }
     p {
     width: 451px;
@@ -101,16 +97,8 @@ html{
     left:0;
     z-index: -1000;
     margin:0;
+    background-color: rgb(17,51,128);
     background-image: linear-gradient(to left, rgba(1, 16, 31, 0), #0d2660);
-  }
-
-  button {
-    background: transparent;
-    border: 1.6px solid $white;
-    padding: 0.5rem 1rem;
-    color:$white;
-    font-size: 1rem;
-    border-radius: 2rem;
   }
 
   .space{

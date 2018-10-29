@@ -10,7 +10,7 @@ var SCREEN_WIDTH = window.innerWidth,
   mouseX = 0, mouseY = 0,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
-  camera, scene, renderer, composer, lightHelper, stats,
+  camera, scene, renderer, composer, lightHelper, stats, controls,
   spotLight, spotLights = [],
   ambientLight,
   flame, flameGeometry,
@@ -63,8 +63,8 @@ function init() {
   var container;
   container = document.getElementById('flame-container');
 
-  camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
-  camera.position.z = 1000;
+  camera = new THREE.PerspectiveCamera(50, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
+  camera.position.z = 1500;
 
   // 1. Create scene
   // TODO: create fog and scence stage?
@@ -90,10 +90,16 @@ function init() {
   ambientLight = new THREE.AmbientLight(0xaaeeff);
   scene.add(ambientLight);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true , alpha:true});
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   container.appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.maxPolarAngle = Math.PI * 0.5;
+  controls.minDistance = 1;
+  controls.maxDistance = 10000;
 
   // 3.1 Load Json data.
   // https://threejs.org/docs/#api/en/loaders/JSONLoader
@@ -196,7 +202,7 @@ function init() {
     flame.position.y = -60;
     flame.position.x = windowHalfX / 2 - 100;
     flame.rotateY(-0.1);
-    flame.scale.multiplyScalar(2);
+    flame.scale.multiplyScalar(1);
 
     scene.add(flame);
 
@@ -211,7 +217,7 @@ function init() {
     }
 
     // 6. Start Flame rotation, Spotlight animation
-    flameRotation();
+    //flameRotation();
     for (var i = 0; i < spotLights.length; i++) {
       tweenlight(spotLights[i]);
     }
@@ -233,7 +239,7 @@ function init() {
   composer.setSize(window.innerWidth, window.innerHeight);
   composer.addPass(renderScene);
   // FIXME: Can't add two compose
-  composer.addPass(bloomPass);
+  //composer.addPass(bloomPass);
   //composer.addPass(effectFocus);
 
   // 8. Add Stats indicator
@@ -264,6 +270,7 @@ function init() {
   });
 
 
+
   // 9. Add EventListener
   addMouseEvents();
   window.addEventListener('resize', onWindowResize, false);
@@ -279,12 +286,6 @@ function animate(time) {
 }
 
 function render() {
-  if(cameraPositions[cameraInter+1] !== undefined && scrollProgress < 1){
-      camera.position.x = cameraPositions[cameraInter].x + (cameraPositions[cameraInter+1].x-cameraPositions[cameraInter].x)*scrollProgress;
-      camera.position.y = cameraPositions[cameraInter].y + (cameraPositions[cameraInter+1].y-cameraPositions[cameraInter].y)*scrollProgress;
-      camera.position.z = cameraPositions[cameraInter].z + (cameraPositions[cameraInter+1].z-cameraPositions[cameraInter].z)*scrollProgress;
-
-  }
   renderer.render(scene, camera);
   composer.render(0.01);
 }
