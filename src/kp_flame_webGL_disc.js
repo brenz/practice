@@ -147,19 +147,20 @@ function init() {
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
-      positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
-      positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
-      positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
 
-      color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
-      colors.push(color.r, color.g, color.b);
       var size = Math.random() * params.particlesSize;
       if (size < params.reducePecentage * params.particlesSize){
         size=1;
       }else{
+        positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
+        positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
+        positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+        color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
+        colors.push(color.r, color.g, color.b);
         size=size*1.2;
+        sizes.push(size);
       }
-      sizes.push(size);
+
       //sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery

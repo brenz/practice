@@ -120,6 +120,15 @@
     }
   </script>
 
+  <script type="x-shader/x-fragment" id="fragmentshader-2">
+    uniform sampler2D texture;
+    uniform float opacity;
+    uniform vec3 topColor;
+    void main() {
+      gl_FragColor = vec4(topColor, opacity );
+      gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+    }
+  </script>
   <script src="js/circlar_timeline.js"></script>
   <script src="js/scroll_control.js"></script>
   <script src="kp_flame_webGL_round.js"></script>

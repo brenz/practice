@@ -26,7 +26,7 @@ var SCREEN_WIDTH = window.innerWidth,
 * TODO: remove in production
 */
 var params = {
-  color: [101,148,204],
+  color: [134,184,245],
   particlesSize: 60,
   particlesRand: 1,
   reducePecentage: 0.8,
@@ -631,6 +631,7 @@ function sectionMovingAnim(cs, ns) {
   moveAnim.add({ // make the light up the background light
     targets: bloomPass,
     threshold: params.bloomThreshold,
+    strenght: params.strength,
     offset: 900
   })
 
@@ -700,7 +701,8 @@ function sectionMovingAnim(cs, ns) {
   if (ns != 0) {
     moveAnim.add({ // Dim the background light
       targets: bloomPass,
-      threshold: 0.25,
+      threshold: 0.6,
+      strength: 0.5,
       offset: 2400
     })
   }

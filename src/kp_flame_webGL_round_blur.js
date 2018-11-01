@@ -10,15 +10,15 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, stats, bloomPass,
-  uniforms,                                       // shade matirial uniforms
+  uniforms, uniforms_overlay,                      // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
-  flame, flameGeometry, gv = [],
+  flame, flameGeometry, gv = [], circleOverlay,
   shinDots = [],
   cameraPositions = [], cameraRotation = [],
   cameraInter = 0,                                // indicate the current camera position
   rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween, rotateCamereTween,    // Tween object
   introPlayed = 0,
-  thickNess = 15, thickDis = 15, thickScale = 0,
+  thickNess = 15, thickDis = 14, thickScale = 0,
   current_section = 0, sections = [], sl = 0
 
 /*
@@ -27,6 +27,7 @@ var SCREEN_WIDTH = window.innerWidth,
 */
 var params = {
   color: [98,155,207],
+  overlayColor: [255,200,200],
   particlesSize: 35,
   particlesRand: 1,
   reducePecentage: 0.8,
@@ -115,7 +116,6 @@ function init() {
     uniforms: uniforms,
     vertexShader: document.getElementById('vertexshader').textContent,
     fragmentShader: document.getElementById('fragmentshader').textContent,
-
     //blending: THREE.NormalBlending,
     blending: THREE.AdditiveBlending,
     depthTest: false,
@@ -149,18 +149,20 @@ function init() {
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
-      positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
-      positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
-      positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
-      color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.4 + 0.4 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
-      colors.push(color.r, color.g, color.b);
+
       var size = Math.random() * params.particlesSize;
       if (size < params.reducePecentage * params.particlesSize){
         size=1;
       }else{
         size=size*1.2;
+        positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
+        positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
+        positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+        color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
+        colors.push(color.r, color.g, color.b);
+        sizes.push(size);
       }
-      sizes.push(size);
+
       //sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery
@@ -189,6 +191,36 @@ function init() {
     if (shinDots[2]) { shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064; }
     if (shinDots[3]) { shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064 }
 
+    var mapImg = new THREE.TextureLoader().load("./img/turbulent_noise_01.png");
+    var geo1 = new THREE.PlaneBufferGeometry( 600, 600 );
+
+     var geo_material = new THREE.MeshBasicMaterial( { map: mapImg } );
+    var uniforms_o = {
+      texture: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
+      topColor: { value: new THREE.Color(0x0077ff) },
+      opacity: { value: 1 }
+    };
+    uniforms_o.topColor.value.copy(new THREE.Color(0.5,0.5,0.5));
+
+    /* var geo_material = new THREE.ShaderMaterial({
+      uniforms        : uniforms_o,
+      vertexShader    : document.getElementById( 'vertexshader' ).textContent,
+      fragmentShader  : document.getElementById( 'fragmentshader-2' ).textContent,
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      transparent: true,
+      vertexColors: true
+    }); */
+
+    geo_material.blending = THREE.CustomBlending;
+    geo_material.blendEquation = THREE.AddEquation; //default
+    geo_material.blendSrc = THREE.SrcColorFactor;
+    geo_material.blendDst = THREE.OneFactor;
+
+    var cloudoverlay = new THREE.Mesh(geo1,geo_material);
+
+    // flame.add( cloudoverlay );
+
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
     //flame.rotateY(-0.3);
@@ -198,14 +230,14 @@ function init() {
 
     // 3.5 Define animation destination, defer cameraPositions
     cameraPositions.push(new THREE.Vector3(
-      -80,
+      0,
       40,
       2150)); // first position is the start position
 
     cameraRotation.push(new THREE.Vector3(
-      -6.292128447463748e-17,
-      0.23222029191249582,
-      1.4480627862203042e-17)); // first position is the start position
+      0,
+      0.28,
+      0)); // first position is the start position
 
     // >> Start
     for (var i = 0; i < shinDots.length; i++) {
@@ -217,19 +249,20 @@ function init() {
     }
 
     // Date stack for camera postion
-    cameraPositions[1].x = -90; cameraPositions[1].y = 500;
+    cameraPositions[1].x = -40; cameraPositions[1].y = 500;
     if (cameraPositions[2]) { cameraPositions[2].x = 330; cameraPositions[2].y = 165; }
     if (cameraPositions[3]) { cameraPositions[3].x = 200; cameraPositions[3].y = -270; }
     if (cameraPositions[4]) { cameraPositions[4].x = -210; cameraPositions[4].y = -200; }
 
     // Data stack for camera rotation
-    cameraRotation[1].x = 0; cameraRotation[1].y = 0.31; cameraRotation[1].z = 0;
+    cameraRotation[1].x = 0; cameraRotation[1].y = 0.6; cameraRotation[1].z = 0;
     if (cameraRotation[2]) { cameraRotation[2].x = 0.38; cameraRotation[2].y = -0.06; cameraRotation[2].z = -0.09; }
     if (cameraRotation[3]) { cameraRotation[3].x = 0.07; cameraRotation[3].y = -0.37; cameraRotation[3].z = -0.09; }
     if (cameraRotation[4]) { cameraRotation[4].x = -0.37; cameraRotation[4].y = -0.11; cameraRotation[4].z = -0.02; }
 
-    camera.position.x = -268.62087843140444;
+    camera.position.x = 0;
     camera.position.y = 100;
+    camera.rotation.y=0.28;
 
     // 3.6 Start Flame rotation
     if (params.ifRotation) {
@@ -251,8 +284,8 @@ function init() {
 
   composer = new THREE.EffectComposer(renderer);
   composer.setSize(window.innerWidth, window.innerHeight);
-  composer.addPass(renderScene);
-  composer.addPass(bloomPass);
+  //composer.addPass(renderScene);
+  //composer.addPass(bloomPass);
 
   // 5. Add Stats indicator
   // TODO: remove stats indicator in real products
@@ -406,10 +439,10 @@ function flameRotation() {
   //console.log("flame start rotation");
   if (!rotateTweenL && !rotateTweenR && flame != undefined) {
     rotateTweenL = new TWEEN.Tween(flame.rotation)
-      .to({ y: -0.1 }, 10000)
+      .to({ y: -0.1 }, 7500)
       .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenR = new TWEEN.Tween(flame.rotation)
-      .to({ y: 0.1 }, 10000)
+      .to({ y: 0.1 }, 7500)
       .easing(TWEEN.Easing.Quadratic.InOut)
     rotateTweenL.chain(rotateTweenR);
     rotateTweenR.chain(rotateTweenL);
@@ -490,7 +523,7 @@ function moveCamera(i) {
   })
   rotateCamereTween = animateVector3(camera.rotation, cameraRotation[i], {
     duration: 3000,
-    easing: TWEEN.Easing.Quadratic.InOut
+    easing: TWEEN.Easing.Quadratic.Out
   })
 }
 
@@ -666,11 +699,12 @@ function sectionMovingAnim(cs, ns) {
 
   moveAnim.add({
     targets: ["#section" + ns + " img"],
-    height: [{ value: 0, duration: 0 },
-    { value: 200, duration: 400 },
-    { value: SCREEN_HEIGHT, duration: 800 }],
+    //height: [{ value: 0, duration: 0 },
+    //{ value: 200, duration: 400 },
+    height:
+    [{ value: SCREEN_HEIGHT, duration: 0 }],
     opacity: [{ value: 0, duration: 0, offset: 1000 },
-    { value: 0.2, duration: 800 },
+    { value: 0.2, duration: 600 },
     { value: 1, duration: 400 }],
     offset: 2200,
 
@@ -727,6 +761,10 @@ function addGuiControl() {
   var f1 = gui.addFolder('flame shape and color');
   f1.addColor(params, 'color').onChange(function (value) {
     uniforms.topColor.value = new THREE.Color(value[0] / 255, value[1] / 255, value[2] / 255)
+  })
+  f1.addColor(params, 'overlayColor').onChange(function (value) {
+    //uniforms.topColor.value = new THREE.Color(value[0] / 255, value[1] / 255, value[2] / 255)
+    params.overlayColor=[value[0],value[1],value[2]];
   })
   f1.add(params, 'particlesSize', 10, 80).step(2).onChange(function (value) {
     params.particlesSize = Number(value);
