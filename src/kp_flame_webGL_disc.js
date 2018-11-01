@@ -18,7 +18,7 @@ var SCREEN_WIDTH = window.innerWidth,
   cameraInter = 0,                                // indicate the current camera position
   rotateTweenL, rotateTweenR, rotateTweenZ, moveCameraTween, rotateCamereTween,    // Tween object
   introPlayed = 0,
-  thickNess = 15, thickDis = 14, thickScale = 0.001,
+  thickNess = 15, thickDis = 14, thickScale = 0,
   current_section = 0, sections = [], sl = 0
 
 /*
@@ -26,8 +26,8 @@ var SCREEN_WIDTH = window.innerWidth,
 * TODO: remove in production
 */
 var params = {
-  color: [71, 121, 158],
-  particlesSize: 45,
+  color: [143,160,171],
+  particlesSize: 25,
   particlesRand: 1,
   reducePecentage: 0.8,
   exposure: 1,
@@ -102,8 +102,8 @@ function init() {
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
   // ## shaded martial, uniforms defined in html
   uniforms = {
-    texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
-    //texture: { value: new THREE.TextureLoader().load("./img/disc.png") },
+    //texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
+    texture: { value: new THREE.TextureLoader().load("./img/disc.png") },
     opacity: { value: 0 },
     topColor: { value: new THREE.Color(0x0077ff) },
   };
@@ -150,7 +150,8 @@ function init() {
       positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
       positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
       positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
-      color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(Math.random() * j));
+
+      color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.5 + 0.4 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
       colors.push(color.r, color.g, color.b);
       var size = Math.random() * params.particlesSize;
       if (size < params.reducePecentage * params.particlesSize){
@@ -159,7 +160,6 @@ function init() {
         size=size*1.2;
       }
       sizes.push(size);
-
       //sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery
