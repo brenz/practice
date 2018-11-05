@@ -72,7 +72,7 @@
   <svg width="0" height="0">
     <defs>
       <clipPath id="circleimage_mask">
-        <circle cx="500" cy="500" r="0" />
+        <circle cx="500" cy="500" r="0" fill="#ffffff" />
       </clipPath>
     </defs>
   </svg>
@@ -81,7 +81,6 @@
   </div>
   <div class="circlar_timeline"></div>
   <div id="flame-container"></div>
-
 
   <!-- Todo: Going to refactroy and load Three.js with package -->
   <script src="js/three.js"></script>
@@ -101,7 +100,9 @@
   <script type="x-shader/x-vertex" id="vertexshader">
     attribute float size;
     varying vec3 vColor;
+    varying vec2 vUv;
     void main() {
+      vUv = uv;
       vColor = color;
       vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
       gl_PointSize = size * ( 300.0 / -mvPosition.z );
@@ -111,23 +112,46 @@
 
   <script type="x-shader/x-fragment" id="fragmentshader">
     uniform sampler2D texture;
+    uniform sampler2D texture_overlay;
     uniform float opacity;
     uniform vec3 topColor;
     varying vec3 vColor;
+    varying vec2 vUv;
     void main() {
       gl_FragColor = vec4(topColor*vColor, opacity );
       gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+      //gl_FragColor = gl_FragColor * texture2D( texture_overlay, gl_PointCoord );
+    }
+  </script>
+
+  <script type="x-shader/x-vertex" id="vertexshader-2">
+    attribute float displacement;
+    varying vec2 vUv;
+    varying float vOpacity;
+    void main() {
+      vUv = uv;
+      vOpacity = displacement;
+      vec3 p = position;
+      p.x += sin(displacement) * 50.0;
+      p.y += cos(displacement) * 50.0;
+      vec4 mvPosition = modelViewMatrix * vec4( p, 1.0 );
+      gl_Position = projectionMatrix * mvPosition;
     }
   </script>
 
   <script type="x-shader/x-fragment" id="fragmentshader-2">
-    uniform sampler2D texture;
-    uniform float opacity;
-    uniform vec3 topColor;
-    varying vec3 vColor;
+    uniform sampler2D texture1;
+    uniform vec3 defaultColor;
+		uniform float defaultOpacity;
+    varying vec2 vUv;
+    varying float vOpacity;
     void main() {
-      gl_FragColor = vec4(topColor, opacity );
-      gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+      vec4 texture = texture2D (texture1, vUv);
+      vec4 texOpact = vec4(vOpacity);
+      vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );
+      vec4 alpha = vec4(0);
+      gl_FragColor = mix( texture, outputColor, alpha);
+      //gl_FragColor = mix( gl_FragColor, texOpact, alpha);
     }
   </script>
 

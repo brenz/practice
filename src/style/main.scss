@@ -8,6 +8,7 @@ $teal_line:#50e3c2;
 @import "components/circlar_timeline";
 @import "components/title-hgroup";
 @import "components/flame_logo";
+@import "components/hero_image";
 @import "components/button";
 
 @media (min-width: 1200px){
@@ -40,7 +41,9 @@ html{
     opacity: 0;
     margin:0 ;
     background-color:rgba($color: #333, $alpha: 0.25);
-
+    img{
+      //filter:brightness(100)
+    }
     .row{
       height:calc(100vh);
     }
@@ -61,6 +64,17 @@ html{
     &:nth-of-type(1){
       z-index: 10;
       background-color: transparent;
+      background-image: linear-gradient(to right, rgba(8, 25, 63, 1) -20%, rgba(30,38,96,0) 70%);
+      &:after {
+        background-image: linear-gradient(to left, rgba(13,38,96,1) -10%,rgba(1,16,31,0) 10%);
+        content: " ";
+        display: block;
+        height: calc(100vh);
+        position: absolute;
+        width:50%;
+        top:0px;
+        right:0px;
+      }
       h1{
         margin-bottom:1.25em;
         margin-top:0.375em;
@@ -96,9 +110,10 @@ html{
     top:0;
     left:0;
     z-index: -1000;
+    height:calc(100vh);
+    width:100%;
     margin:0;
     background-color: rgb(17,51,128);
-    background-image: linear-gradient(to left, rgba(1, 16, 31, 0), #0d2660);
   }
 
   .space{

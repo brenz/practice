@@ -10,9 +10,10 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, stats, bloomPass,
+  bufferTexture, bufferScene,
   uniforms, uniforms_overlay,                      // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
-  flame, flameGeometry, gv = [], circleOverlay,
+  flame, flameGeometry, gv = [], cloudoverlay,
   shinDots = [],
   cameraPositions = [], cameraRotation = [],
   cameraInter = 0,                                // indicate the current camera position
@@ -29,11 +30,11 @@ var params = {
   color: [98,155,207],
   overlayColor: [255,200,200],
   particlesSize: 35,
-  particlesRand: 1,
+  particlesRand: 0.5,
   reducePecentage: 0.8,
   exposure: 1,
-  bloomThreshold: 0.6,
-  bloomStrength: 0.7,
+  bloomThreshold: 0.5,
+  bloomStrength: 0.6,
   bloomRadius: 0.3,
   rotateY: 0,
   rotateX: 0,
@@ -93,9 +94,10 @@ function init() {
   // TODO: create fog and scence stage?
   scene = new THREE.Scene();
   scene.background = new THREE.Color("rgb(17,51,128)");
+  bufferScene = new THREE.Scene();
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
 
@@ -106,6 +108,7 @@ function init() {
     //texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
     //texture: { value: new THREE.TextureLoader().load("./img/disc.png") },
     texture: { value: new THREE.TextureLoader().load("./img/round_blur.png") },
+    texture_overlay: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
     opacity: { value: 0 },
     topColor: { value: new THREE.Color(0x0077ff) },
   };
@@ -135,6 +138,7 @@ function init() {
 
   //(start load call back)
   loader.load('./data/KPSM_1D_4.json', function (g, m) {
+  //loader.load('./data/KPSM_flame.json', function (g, m) {
     // Create 5 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg = g.clone()
@@ -149,7 +153,6 @@ function init() {
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
-
       var size = Math.random() * params.particlesSize;
       if (size < params.reducePecentage * params.particlesSize){
         size=1;
@@ -158,6 +161,7 @@ function init() {
         positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
         positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
         positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+
         color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
         colors.push(color.r, color.g, color.b);
         sizes.push(size);
@@ -191,41 +195,55 @@ function init() {
     if (shinDots[2]) { shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064; }
     if (shinDots[3]) { shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064 }
 
-    var mapImg = new THREE.TextureLoader().load("./img/turbulent_noise_01.png");
-    var geo1 = new THREE.PlaneBufferGeometry( 600, 600 );
+    //var mapImg = new THREE.TextureLoader().load("./img/turbulent_noise_01.png");
+    var geo1 = new THREE.PlaneBufferGeometry( 1200, 1200 );
 
-     var geo_material = new THREE.MeshBasicMaterial( { map: mapImg } );
+    // bufferTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+
     var uniforms_o = {
-      texture: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
-      topColor: { value: new THREE.Color(0x0077ff) },
-      opacity: { value: 1 }
+      texture1: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
+      defaultColor: { type: "c", value: new THREE.Color( 0x113380 ) },
+      defaultOpacity:  { type: "f", value: 0.5 }
     };
-    uniforms_o.topColor.value.copy(new THREE.Color(0.5,0.5,0.5));
 
-    /* var geo_material = new THREE.ShaderMaterial({
+    var geo_material = new THREE.ShaderMaterial({
       uniforms        : uniforms_o,
-      vertexShader    : document.getElementById( 'vertexshader' ).textContent,
+      vertexShader    : document.getElementById( 'vertexshader-2' ).textContent,
       fragmentShader  : document.getElementById( 'fragmentshader-2' ).textContent,
-      blending: THREE.AdditiveBlending,
       depthTest: false,
       transparent: true,
       vertexColors: true
-    }); */
+    });
+    var vDisplacement = new Float32Array(flameGeometry.attributes.position.count);
+    for (var n =0;n<vDisplacement.length; n++) {
+      vDisplacement[n]=0.5+0.5*Math.sin(n);
+    }
+    geo1.addAttribute('displacement', new THREE.BufferAttribute(vDisplacement,1));
+    // geo_material = new THREE.MeshBasicMaterial( { map: mapImg } );
 
-    geo_material.blending = THREE.CustomBlending;
-    geo_material.blendEquation = THREE.AddEquation; //default
-    geo_material.blendSrc = THREE.SrcColorFactor;
-    geo_material.blendDst = THREE.OneFactor;
+    //geo_material.blending = THREE.CustomBlending;
+    //geo_material.blending = THREE.NormalBlending;
+    geo_material.blending = THREE.AdditiveBlending;
+    //geo_material.blendEquation = THREE.AddEquation; //default
+    //geo_material.blendSrc = THREE.SrcColorFactor;
+    //geo_material.blendDst = THREE.OneFactor;
 
-    var cloudoverlay = new THREE.Mesh(geo1,geo_material);
+    cloudoverlay = new THREE.Mesh(geo1, geo_material);
+    cloudoverlay.z = -50;
 
-    // flame.add( cloudoverlay );
+    //var planeflameGeometry = new THREE.BufferGeometry().fromGeometry( gg );
+    //var basicMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+    //var planeflame = new THREE.Mesh(geo1, geo_material);
+    //flame.add(planeflame);
+
+    //scene.add( cloudoverlay );
 
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
     //flame.rotateY(-0.3);
     flame.scale.multiplyScalar(2);
     //flame.onAfterRender = animateFlame;
+    //scene.add(planeflame);
     scene.add(flame);
 
     // 3.5 Define animation destination, defer cameraPositions
@@ -249,13 +267,13 @@ function init() {
     }
 
     // Date stack for camera postion
-    cameraPositions[1].x = -40; cameraPositions[1].y = 500;
-    if (cameraPositions[2]) { cameraPositions[2].x = 330; cameraPositions[2].y = 165; }
-    if (cameraPositions[3]) { cameraPositions[3].x = 200; cameraPositions[3].y = -270; }
-    if (cameraPositions[4]) { cameraPositions[4].x = -210; cameraPositions[4].y = -200; }
+    cameraPositions[1].x = -55; cameraPositions[1].y = 495; cameraPositions[1].z = 80;
+    if (cameraPositions[2]) { cameraPositions[2].x = 350; cameraPositions[2].y = 165; cameraPositions[2].z = 50;}
+    if (cameraPositions[3]) { cameraPositions[3].x = 210; cameraPositions[3].y = -280; cameraPositions[3].z = 80;}
+    if (cameraPositions[4]) { cameraPositions[4].x = -200; cameraPositions[4].y = -190; cameraPositions[4].z = 70;}
 
     // Data stack for camera rotation
-    cameraRotation[1].x = 0; cameraRotation[1].y = 0.6; cameraRotation[1].z = 0;
+    cameraRotation[1].x = 0; cameraRotation[1].y = 0.3; cameraRotation[1].z = 0;
     if (cameraRotation[2]) { cameraRotation[2].x = 0.38; cameraRotation[2].y = -0.06; cameraRotation[2].z = -0.09; }
     if (cameraRotation[3]) { cameraRotation[3].x = 0.07; cameraRotation[3].y = -0.37; cameraRotation[3].z = -0.09; }
     if (cameraRotation[4]) { cameraRotation[4].x = -0.37; cameraRotation[4].y = -0.11; cameraRotation[4].z = -0.02; }
@@ -290,12 +308,12 @@ function init() {
   // 5. Add Stats indicator
   // TODO: remove stats indicator in real products
   stats = new Stats();
-  container.appendChild(stats.dom);
+  // container.appendChild(stats.dom);
 
   // 6. GUI control
   // https://github.com/dataarts/dat.gui && http://workshop.chromeexperiments.com/examples/gui/#1--Basic-Usage
   // TODO: Remove GUI control in real products
-  addGuiControl();
+  // addGuiControl();
 
   // 7. Add EventListener
   // mouse event listener
@@ -355,7 +373,7 @@ function animate() {
   requestAnimationFrame(animate);
   render();
   if (flameGeometry.attributes.size) {
-    animateFlame();
+    animateFlame(animate);
   }
   TWEEN.update();
   stats.update();
@@ -363,9 +381,13 @@ function animate() {
 
 function render() {
   if (flame !== undefined) {
-    if (introPlayed !== 1) { playIntro(); }
+    if (introPlayed !== 1) {
+      playIntro();
+    }
   }
+  //cloudoverlay.rotation.z +=0.0005;
   renderer.render(scene, camera);
+  //renderer.render(bufferScene, camera);
   composer.render();
 }
 /*
@@ -400,37 +422,40 @@ function playIntro() {
 
 function animateFlame() {
   var time = Date.now() * 0.001;
-  var sizes = flameGeometry.attributes.size.array;
+  // var sizes = flameGeometry.attributes.size.array;
   var positions = flameGeometry.attributes.position.array;
   var colors = flameGeometry.attributes.color.array;
   var r = 500;
   //var fp = flameGeometry.attributes.position.array
- /* if (camera.position.z < 800) {
-    for (var i = 0; i < particles; i++) {
-      //sizes[i] = ((0.5 + 0.5 * Math.sin(positions[i * 3])) * (0.5 + 0.5 * Math.sin(time))) * params.particlesSize;
-      var dx = Math.abs(positions[i * 3] - camera.position.x);
-      var dy = Math.abs(positions[i * 3 + 1] - camera.position.y);
-      var dz = Math.abs(positions[i * 3 + 2] - camera.position.z);
-
-      //positions[i * 3 + 2] += dz / 1000;
-      if (dx < r && dy < r && dz < r) {
-        //sizes[i]=Math.sqrt(dx*dx + dy*dy + dz*dz);
-        positions[i * 3] += dx / 1000;
-        positions[i * 3 + 1] += dy / 1000;
-      }
-    }
+  if (camera.position.z < 800) {
+    time = time * 0.35;
   } else {
+    time = time * 1.5;
+  }
+  //if (!moveCameraTween.isPlaying()){
     for (var j = 0; j < particles; j++) {
-      positions[j * 3    ] = gv[j].x + Math.random() * Math.sin(j) * params.particlesRand;
-      positions[j * 3 + 1] = gv[j].y + Math.random() * Math.sin(j) * params.particlesRand;
-      positions[j * 3 + 2] = gv[j].z + Math.random() * Math.sin(j) * params.particlesRand;
-    }
-  }*/
-  // flameGeometry.attributes.size.needsUpdate = true;
-  //flameGeometry.attributes.position.needsUpdate = true;
-  // flameGeometry.attributes.color.needsUpdate = true;
-}
+      var vx = positions [j * 3];
+      var vy = positions [j * 3 + 1];
+      var vz = positions [j * 3 + 2];
+      var h = 204/360; // ( 360 * ( 1.0 + time ) % 360 ) / 360;
+      var s = 0.8 + 0.2 * Math.sin(j) ;
+      //( 0.5 + 0.5* Math.sin(time)) //0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI) ;
+      var l = 0.3 +
+              0.2 * Math.sin(vy * 10 * Math.PI + time) +
+              0.2 * Math.sin(vx * 10 * Math.PI + time) +
+              0.3 * Math.sin(vz / ( thickNess * thickDis ) * Math.PI);
 
+      var color=new THREE.Color();
+      color.setHSL(h, s ,l);
+      colors[j * 3 ]    = color.r;
+      colors[j * 3 + 1] = color.g;
+      colors[j * 3 + 2] = color.b;
+    }
+  //}
+  // flameGeometry.attributes.size.needsUpdate = true;
+  // flameGeometry.attributes.position.needsUpdate = true;
+  flameGeometry.attributes.color.needsUpdate = true;
+}
 
 /*
 * Start the flame shimm
@@ -496,7 +521,6 @@ function flamePanCrossStop() {
     rotateTweenZ.stop();
   }
 }
-
 
 /**
  * Init animation move camera to destination
@@ -654,6 +678,13 @@ function sectionMovingAnim(cs, ns) {
       duration: 400,
       easing: 'easeOutCubic'
     })
+    moveAnim.add({
+      targets: shinDots[current_shindot].material,
+      opacity:[0.5,0],
+      offset: 300,
+      duration: 400,
+      easing: 'easeOutCubic'
+    })
   }
   if (ns === 0) { // first page dont have right side dot
     moveAnim.add({
@@ -701,36 +732,42 @@ function sectionMovingAnim(cs, ns) {
     targets: ["#section" + ns + " img"],
     //height: [{ value: 0, duration: 0 },
     //{ value: 200, duration: 400 },
-    height:
-    [{ value: SCREEN_HEIGHT, duration: 0 }],
+    height:[{ value: SCREEN_HEIGHT, duration: 0 }],
     opacity: [{ value: 0, duration: 0, offset: 1000 },
-    { value: 0.2, duration: 600 },
-    { value: 1, duration: 400 }],
-    offset: 2200,
-
+    { value: 0.05, duration: 500 },
+    { value: 1, duration: 500 }],
+    offset: 2500,
   })
   moveAnim.add({
     targets: '#circleimage_mask circle',
     cx: [{ value: 300, duration: 0 },
-    { value: 300, duration: 800 },
-    { value: 0, duration: 1200 }],
+    { value: 300, duration: 500 },
+    { value: 0, duration: 1000 }],
     cy: [windowHalfY, windowHalfY],
     r: [
       { value: 0, duration: 0 },
-      { value: 200, duration: 800 },
-      { value: 721, duration: 1200 }
+      { value: 100, duration: 500 },
+      { value: 721, duration: 1000 }
     ],
-    offset: 2200,
+    offset: 2500,
 
   })
   if (next_shindot >= 0) { //first page dont have shotDot
     moveAnim.add({
       targets: shinDots[next_shindot].scale,
       x: 1, y: 1, z: 1,
-      offset: (cs === 0 && ns === 1) ? 500 : 2000, // first section show shinedot quicker, rest of section show shinedot slower
-      duration: (cs === 0 && ns === 1) ? 3000 : 1500,
+      offset: (cs === 0 && ns === 1) ? 100 : 1500, // first section show shinedot quicker, rest of section show shinedot slower
+      duration: (cs === 0 && ns === 1) ? 3500 : 2500,
       easing: 'easeInCubic'
     })
+    moveAnim.add({
+      targets: shinDots[next_shindot].material,
+      opacity: [0,0.8],
+      offset: (cs === 0 && ns === 1) ? 500 : 1500, // first section show shinedot quicker, rest of section show shinedot slower
+      duration: (cs === 0 && ns === 1) ? 3500 : 2500,
+      easing: 'easeInCubic'
+    })
+
   }
   if (ns != 0) {
     moveAnim.add({ // Dim the background light
