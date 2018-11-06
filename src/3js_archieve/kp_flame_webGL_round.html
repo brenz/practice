@@ -72,7 +72,7 @@
   <svg width="0" height="0">
     <defs>
       <clipPath id="circleimage_mask">
-        <circle cx="500" cy="500" r="0"/>
+        <circle cx="500" cy="500" r="0" />
       </clipPath>
     </defs>
   </svg>
@@ -81,6 +81,7 @@
   </div>
   <div class="circlar_timeline"></div>
   <div id="flame-container"></div>
+
 
   <!-- Todo: Going to refactroy and load Three.js with package -->
   <script src="js/three.js"></script>
@@ -118,8 +119,19 @@
       gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
   </script>
+
+  <script type="x-shader/x-fragment" id="fragmentshader-2">
+    uniform sampler2D texture;
+    uniform float opacity;
+    uniform vec3 topColor;
+    void main() {
+      gl_FragColor = vec4(topColor, opacity );
+      gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+    }
+  </script>
   <script src="js/circlar_timeline.js"></script>
-  <script src="kp_flame_webGL.js"></script>
+  <script src="js/scroll_control.js"></script>
+  <script src="kp_flame_webGL_round.js"></script>
 
 </body>
 

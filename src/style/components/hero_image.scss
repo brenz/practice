@@ -1,0 +1,19 @@
+.hero_image{
+  height:457px;
+  overflow-y: hidden;
+  position: relative;
+  #flame-container{
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: -1000;
+    height:calc(100vh);
+    width:100%;
+    margin:0;
+    background-color: rgb(17,51,128);
+  }
+
+}
+.hero_clip{
+  clip-path: url(#hero_clip);
+}

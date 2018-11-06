@@ -1,0 +1,22 @@
+@font-face
+ {
+   font-family: 'Circular' ;
+   src: url(../fonts/lineto-circular-book-c.ttf) format('truetype');
+ }
+
+ @font-face
+ {
+   font-family: 'CircularPro' ;
+   src: url(../fonts/CircularPro-Black.otf) format('opentype');
+ }
+
+ @font-face
+ {
+   font-family: 'CircularPro Italic' ;
+   src: url(../fonts/CircularPro-BlackItalic.otf) format('opentype');
+ }
+
+ body{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ }

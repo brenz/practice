@@ -13,15 +13,11 @@
 
 <body class="homepage">
   <div class="container-fluid">
-    <section class="intro" id="section0">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <span class="flame_logo"></span>
-            <h1>Where does your<br />journey begin</h1>
-            <button id="imemerse" class="button-default button--rightarrow"><span>Find Your Place Here</span></button>
-          </div>
-        </div>
+    <section class="intro row align-items-center no-gutters" id="section0">
+      <div class="col-md-6 offset-md-2">
+        <span class="flame_logo"></span>
+        <h1>Where does your<br />journey begin</h1>
+        <button id="imemerse"><span>Find Your Place Here</span> <span class="home_button_arrow"></span></button>
       </div>
     </section>
 
@@ -58,7 +54,7 @@
       </div>
     </section>
 
-    <section class="row align-items-center no-gutters" id="section4">
+   <section class="row align-items-center no-gutters" id="section4">
       <div class="col-md-6">
         <img src="img/round_image4.png" class="clip-svg">
       </div>
@@ -72,7 +68,7 @@
   <svg width="0" height="0">
     <defs>
       <clipPath id="circleimage_mask">
-        <circle cx="500" cy="500" r="0"/>
+        <circle cx="500" cy="500" r="0" />
       </clipPath>
     </defs>
   </svg>
@@ -80,7 +76,9 @@
     <div class="scroll_text">Scroll</div><span class="arrow"><img class="down_arrow" src="img/down_arrow.png"></span>
   </div>
   <div class="circlar_timeline"></div>
-  <div id="flame-container"></div>
+  <div class="control" id="control" style="position: absolute;top:50px;left:0px;z-index:500;color:white"></div>
+  <div id="flame-container" style="z-index:100"></div>
+
 
   <!-- Todo: Going to refactroy and load Three.js with package -->
   <script src="js/three.js"></script>
@@ -92,6 +90,7 @@
   <script src="js/postprocessing/RenderPass.js"></script>
   <script src="js/postprocessing/ShaderPass.js"></script>
   <script src="js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="js/OrbitControls.js"></script>
   <script src="js/stats.min.js"></script>
   <script src='js/dat.gui.min.js'></script>
   <script src="js/Tween.js"></script>
@@ -118,8 +117,10 @@
       gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
   </script>
+
   <script src="js/circlar_timeline.js"></script>
-  <script src="kp_flame_webGL.js"></script>
+  <script src="js/scroll_control.js"></script>
+  <script src="kp_flame_cameraMove_75.js"></script>
 
 </body>
 

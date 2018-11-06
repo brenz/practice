@@ -1,0 +1,73 @@
+.button-style {
+  border-radius: 3px;
+  padding: 7px 16px 8px;
+  display: inline-block;
+  background: #fff;
+  text-decoration: none;
+  vertical-align: top;
+  cursor: pointer;
+  color: #666;
+  border: none;
+  outline: none;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-size: 14px;
+}
+
+.button {
+  @extend .button-style;
+}
+
+.button-default{
+  background: transparent;
+  border: 1.6px solid $white;
+  padding: 0.875em 2em 1em 2em;
+  color:$white;
+  font-size: 1rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  //transition: all 1s;
+
+  span{
+    font-family: CircularPro;
+    font-size: 1rem;
+    font-weight: 900;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    color: #ffffff;
+    display:block;
+  }
+
+}
+.button--rightarrow{
+  ::after{
+    content:"";
+    background-image:
+      url("../img/rightarrow.svg"),
+      url("../img/rightarrow-long.svg");
+    background-position:
+      0 0,
+      0 16px;
+    background-repeat:
+      no-repeat;
+    margin-left: 8px;
+    transform: translateY(2px);
+    display: inline-block;
+    width:32px;
+    height:16px;
+    margin-right:-2.5px;
+  }
+  &:hover{
+    span {
+      margin-left:-2.5px;
+    }
+    ::after{
+      margin-right:0px;
+      background-position:
+      0 -16px,
+      0 0;
+    }
+  }
+}

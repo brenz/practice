@@ -10,7 +10,8 @@ var SCREEN_WIDTH = window.innerWidth,
   windowHalfX = window.innerWidth / 2,
   windowHalfY = window.innerHeight / 2,
   camera, scene, renderer, composer, stats, bloomPass,
-  uniforms,                                       // shade matirial uniforms
+  bufferTexture, bufferScene,
+  uniforms, uniforms_overlay,                      // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
   flame, flameGeometry, gv = [], cloudoverlay,
   shinDots = [],
@@ -48,6 +49,7 @@ var params = {
 /*
 * WEBGL Supportive detect
 */
+
 document.onreadystatechange = function () {
   if (document.readyState == "interactive") {
     circlar_timeline.init();
@@ -103,7 +105,10 @@ function init() {
   // https://threejs.org/examples/?q=buff#webgl_buffergeometry_custom_attributes_particles
   // ## shaded martial, uniforms defined in html
   uniforms = {
+    //texture: { value: new THREE.TextureLoader().load("./img/spark1.png") },
+    //texture: { value: new THREE.TextureLoader().load("./img/disc.png") },
     texture: { value: new THREE.TextureLoader().load("./img/round_blur.png") },
+    texture_overlay: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
     opacity: { value: 0 },
     topColor: { value: new THREE.Color(0x0077ff) },
   };
@@ -114,6 +119,7 @@ function init() {
     uniforms: uniforms,
     vertexShader: document.getElementById('vertexshader').textContent,
     fragmentShader: document.getElementById('fragmentshader').textContent,
+    //blending: THREE.NormalBlending,
     blending: THREE.AdditiveBlending,
     depthTest: false,
     transparent: true,
@@ -132,10 +138,13 @@ function init() {
 
   //(start load call back)
   loader.load('./data/KPSM_1D_4.json', function (g, m) {
+  //loader.load('./data/KPSM_flame.json', function (g, m) {
     // Create 5 layers by normal geomertery
     g.scale(500, 500, 500);
     var gg = g.clone()
     for (var i = 0; i < thickNess; i++) {
+      //var scaleSize = 1 + thickScale* Math.sin(i / thickNess * Math.PI);
+      //var scaleSize = 1 - thickScale* Math.sin(i / thickNess * Math.PI);
       var scaleSize = 1 - i * thickScale;
       g.merge(gg.clone().translate(0, 0, thickNess * thickDis / 2 - i * thickDis).scale(scaleSize, scaleSize, scaleSize));
     }
@@ -143,7 +152,6 @@ function init() {
     particles = gv.length;
 
     // Only bufferGeomerty can take shade matriel, set position from vericles
-    // Remove some of particles
     for (var j = 0; j < particles; j++) {
       var size = Math.random() * params.particlesSize;
       if (size < params.reducePecentage * params.particlesSize){
@@ -158,6 +166,8 @@ function init() {
         colors.push(color.r, color.g, color.b);
         sizes.push(size);
       }
+
+      //sizes.push(Math.random() * params.particlesSize);
     }
     // 3.2 create flame geomertery
     flameGeometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -185,9 +195,55 @@ function init() {
     if (shinDots[2]) { shinDots[2].position.x = 100.63136; shinDots[2].position.y = -132.04424; shinDots[2].position.z = -30.85064; }
     if (shinDots[3]) { shinDots[3].position.x = -122.28272; shinDots[3].position.y = -118.68192; shinDots[3].position.z = -32.35064 }
 
+    //var mapImg = new THREE.TextureLoader().load("./img/turbulent_noise_01.png");
+    var geo1 = new THREE.PlaneBufferGeometry( 1200, 1200 );
+
+    // bufferTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+
+    var uniforms_o = {
+      texture1: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
+      defaultColor: { type: "c", value: new THREE.Color( 0x113380 ) },
+      defaultOpacity:  { type: "f", value: 0.5 }
+    };
+
+    var geo_material = new THREE.ShaderMaterial({
+      uniforms        : uniforms_o,
+      vertexShader    : document.getElementById( 'vertexshader-2' ).textContent,
+      fragmentShader  : document.getElementById( 'fragmentshader-2' ).textContent,
+      depthTest: false,
+      transparent: true,
+      vertexColors: true
+    });
+    var vDisplacement = new Float32Array(flameGeometry.attributes.position.count);
+    for (var n =0;n<vDisplacement.length; n++) {
+      vDisplacement[n]=0.5+0.5*Math.sin(n);
+    }
+    geo1.addAttribute('displacement', new THREE.BufferAttribute(vDisplacement,1));
+    // geo_material = new THREE.MeshBasicMaterial( { map: mapImg } );
+
+    //geo_material.blending = THREE.CustomBlending;
+    //geo_material.blending = THREE.NormalBlending;
+    geo_material.blending = THREE.AdditiveBlending;
+    //geo_material.blendEquation = THREE.AddEquation; //default
+    //geo_material.blendSrc = THREE.SrcColorFactor;
+    //geo_material.blendDst = THREE.OneFactor;
+
+    cloudoverlay = new THREE.Mesh(geo1, geo_material);
+    cloudoverlay.z = -50;
+
+    //var planeflameGeometry = new THREE.BufferGeometry().fromGeometry( gg );
+    //var basicMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+    //var planeflame = new THREE.Mesh(geo1, geo_material);
+    //flame.add(planeflame);
+
+    scene.add( cloudoverlay );
+
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
+    //flame.rotateY(-0.3);
     flame.scale.multiplyScalar(2);
+    //flame.onAfterRender = animateFlame;
+    //scene.add(planeflame);
     scene.add(flame);
 
     // 3.5 Define animation destination, defer cameraPositions
@@ -199,7 +255,7 @@ function init() {
     cameraRotation.push(new THREE.Vector3(
       0,
       0.28,
-      0)); // first rotation position
+      0)); // first position is the start position
 
     // >> Start
     for (var i = 0; i < shinDots.length; i++) {
@@ -210,7 +266,7 @@ function init() {
       cameraRotation.push(new THREE.Vector3(0, 0, 0));
     }
 
-    // Date stack for camera position
+    // Date stack for camera postion
     cameraPositions[1].x = -55; cameraPositions[1].y = 495; cameraPositions[1].z = 80;
     if (cameraPositions[2]) { cameraPositions[2].x = 350; cameraPositions[2].y = 165; cameraPositions[2].z = 50;}
     if (cameraPositions[3]) { cameraPositions[3].x = 210; cameraPositions[3].y = -280; cameraPositions[3].z = 80;}
@@ -329,7 +385,9 @@ function render() {
       playIntro();
     }
   }
+  //cloudoverlay.rotation.z +=0.0005;
   renderer.render(scene, camera);
+  //renderer.render(bufferScene, camera);
   composer.render();
 }
 /*
@@ -381,6 +439,7 @@ function animateFlame() {
       var vz = positions [j * 3 + 2];
       var h = 204/360; // ( 360 * ( 1.0 + time ) % 360 ) / 360;
       var s = 0.8 + 0.2 * Math.sin(j) ;
+      //( 0.5 + 0.5* Math.sin(time)) //0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI) ;
       var l = 0.3 +
               0.2 * Math.sin(vy * 10 * Math.PI + time) +
               0.2 * Math.sin(vx * 10 * Math.PI + time) +
@@ -393,6 +452,8 @@ function animateFlame() {
       colors[j * 3 + 2] = color.b;
     }
   //}
+  // flameGeometry.attributes.size.needsUpdate = true;
+  // flameGeometry.attributes.position.needsUpdate = true;
   flameGeometry.attributes.color.needsUpdate = true;
 }
 
@@ -834,4 +895,34 @@ function particlesRandSpread(value, density) {
     positions[j * 3 + 2] = (gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand;
   }
   flameGeometry.attributes.position.needsUpdate = true;
+}
+function particlesOutSpread(value, density) {
+  if (!density) { density = 1 }
+  if (!value) { value = 1.1 }
+  var positions = flameGeometry.attributes.position.array;
+  for (var j = 0; j < particles; j += density) {
+    positions[j * 3] += gv[j].x * value;
+    positions[j * 3 + 1] += gv[j].y * value;
+    positions[j * 3 + 2] += gv[j].z * value;
+  }
+  flameGeometry.attributes.position.needsUpdate = true;
+}
+
+function particlesRandSpreadTween(value) {
+  params.particlesRand = Number(value);
+  var positions = flameGeometry.attributes.position.array;
+  for (var j = 0; j < particles; j++) {
+    var spreadX = new TWEEN.Tween(positions[j * 3])
+      .to((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand)
+      .onUpdate(function () {
+        flameGeometry.attributes.position.needsUpdate = true;
+      });
+    var spreadY = new TWEEN.Tween(positions[j * 3 + 1])
+      .to((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
+    var spreadZ = new TWEEN.Tween(positions[j * 3 + 2])
+      .to((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
+    spreadX.chain(spreadY);
+    spreadX.chain(spreadZ);
+    spreadX.start()
+  }
 }
