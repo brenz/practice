@@ -236,7 +236,7 @@ function init() {
     //var planeflame = new THREE.Mesh(geo1, geo_material);
     //flame.add(planeflame);
 
-    //scene.add( cloudoverlay );
+    scene.add( cloudoverlay );
 
     // 3.4 Adjust flame position
     // TODO: Conside responsive design
