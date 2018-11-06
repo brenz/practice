@@ -12,7 +12,7 @@ var SCREEN_WIDTH = window.innerWidth,
   camera, scene, renderer, composer, stats, bloomPass,
   uniforms,                                       // shade matirial uniforms
   particles = 100000,                             // number of flame particles, for performance consideration, reduce the particles <100000
-  flame, flameGeometry, gv = [], cloudoverlay,
+  flame, flameGeometry, gv = [],
   shinDots = [],
   cameraPositions = [], cameraRotation = [],
   cameraInter = 0,                                // indicate the current camera position
@@ -92,7 +92,6 @@ function init() {
   // TODO: create fog and scence stage?
   scene = new THREE.Scene();
   scene.background = new THREE.Color("rgb(17,51,128)");
-  bufferScene = new THREE.Scene();
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio( window.devicePixelRatio );
@@ -252,7 +251,7 @@ function init() {
   // 5. Add Stats indicator
   // TODO: remove stats indicator in real products
   stats = new Stats();
-  // container.appendChild(stats.dom);
+  container.appendChild(stats.dom);
 
   // 6. GUI control
   // https://github.com/dataarts/dat.gui && http://workshop.chromeexperiments.com/examples/gui/#1--Basic-Usage
