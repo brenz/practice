@@ -25,8 +25,8 @@ var SCREEN_WIDTH = window.innerWidth,
 * TODO: remove in production
 */
 var params = {
-  color: [98,155,207],
-  overlayColor: [255,200,200],
+  color: [98, 155, 207],
+  overlayColor: [255, 200, 200],
   particlesSize: 35,
   particlesRand: 0.5,
   reducePecentage: 0.8,
@@ -83,11 +83,11 @@ document.onreadystatechange = function () {
 function init() {
   var container;
   container = document.getElementById('flame-container');
-  var clip;
-  clip = document.getElementById('hero_clip');
 
   camera = new THREE.PerspectiveCamera(40, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
   camera.position.set(0, 0, 2000);
+
+  resizeCircle();
 
   // 1. Create/Define scene and render
   // TODO: create fog and scence stage?
@@ -96,7 +96,7 @@ function init() {
   bufferScene = new THREE.Scene();
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   container.appendChild(renderer.domElement);
 
@@ -107,9 +107,9 @@ function init() {
   // ## shaded martial, uniforms defined in html
   uniforms = {
     texture: { value: new THREE.TextureLoader().load("./img/round_blur.png") },
-    texture_overlay: { value: new THREE.TextureLoader().load("./img/turbulent_noise_01.png") },
-    opacity: { value: 1
-   },
+    opacity: {
+      value: 1
+    },
     topColor: { value: new THREE.Color(0x0077ff) },
   };
 
@@ -151,15 +151,15 @@ function init() {
     // Only bufferGeomerty can take shade matriel, set position from vericles
     for (var j = 0; j < particles; j++) {
       var size = Math.random() * params.particlesSize;
-      if (size < params.reducePecentage * params.particlesSize){
-        size=1;
-      }else{
-        size=size*1.2;
+      if (size < params.reducePecentage * params.particlesSize) {
+        size = 1;
+      } else {
+        size = size * 1.2;
         positions.push((gv[j].x) + Math.random() * Math.sin(j) * params.particlesRand);
         positions.push((gv[j].y) + Math.random() * Math.sin(j) * params.particlesRand);
         positions.push((gv[j].z) + Math.random() * Math.sin(j) * params.particlesRand);
 
-        color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI));
+        color.setHSL(204 / 360, 0.5 + 0.5 * Math.sin(j), 0.3 + 0.3 * Math.sin(gv[j].z / (thickNess * thickDis) * Math.PI));
         colors.push(color.r, color.g, color.b);
         sizes.push(size);
       }
@@ -185,56 +185,56 @@ function init() {
       flameRotation();
     }
   }) // End of load callback
-  camera.position.x=0;
-  camera.position.y=200;
-  camera.position.z=700;
+  camera.position.x = 0;
+  camera.position.y = 200;
+  camera.position.z = 700;
 
 
   // 7. Add EventListener
   // mouse event listener
   window.addEventListener('resize', onWindowResize, false);
-
-  document.addEventListener('keyup', function (event) {
-    if (event.code === 'Tab') {
-      var focused = document.activeElement;
-      if (!focused || focused == document.body)
-        focused = null;
-      else if (document.querySelector)
-        focused = document.querySelector(":focus");
-      if (focused.classList[0] === "scroll_down") {
-        var next_section = current_section + 1;
-        //sectionMovingAnim(current_section, next_section)
+  /*
+    document.addEventListener('keyup', function (event) {
+      if (event.code === 'Tab') {
+        var focused = document.activeElement;
+        if (!focused || focused == document.body)
+          focused = null;
+        else if (document.querySelector)
+          focused = document.querySelector(":focus");
+        if (focused.classList[0] === "scroll_down") {
+          var next_section = current_section + 1;
+          //sectionMovingAnim(current_section, next_section)
+        }
+        if (focused.classList[0] === "progress-dot" && !focused.classList.contains("active")) {
+          var next_section = current_section + 1;
+          //sectionMovingAnim(current_section, next_section)
+        }
       }
-      if (focused.classList[0] === "progress-dot" && !focused.classList.contains("active")) {
-        var next_section = current_section + 1;
-        //sectionMovingAnim(current_section, next_section)
+      if (event.code === 'ArrowDown') {
+        camera.position.y += 10;
+        console.log(camera.position);
       }
-    }
-    if (event.code === 'ArrowDown') {
-      camera.position.y += 10;
-      console.log(camera.position);
-    }
-    if (event.code === 'ArrowUp') {
-      camera.position.y -= 10;
-      console.log(camera.position);
-    }
-    if (event.code === 'ArrowLeft') {
-      camera.position.x -= 10;
-      console.log(camera.position);
-    }
-    if (event.code === 'ArrowRight') {
-      camera.position.x += 10;
-      console.log(camera.position);
-    }
-    if (event.code === 'Escape') {
-      camera.position.z += 50;
-      console.log(camera.position);
-    }
-    if (event.code === 'Enter') {
-      camera.position.z -= 50;
-      console.log(camera.position);
-    }
-  });
+      if (event.code === 'ArrowUp') {
+        camera.position.y -= 10;
+        console.log(camera.position);
+      }
+      if (event.code === 'ArrowLeft') {
+        camera.position.x -= 10;
+        console.log(camera.position);
+      }
+      if (event.code === 'ArrowRight') {
+        camera.position.x += 10;
+        console.log(camera.position);
+      }
+      if (event.code === 'Escape') {
+        camera.position.z += 50;
+        console.log(camera.position);
+      }
+      if (event.code === 'Enter') {
+        camera.position.z -= 50;
+        console.log(camera.position);
+      }
+    });*/
 } // End of init()
 
 function animate() {
@@ -253,30 +253,28 @@ function render() {
 
 function animateFlame() {
   var time = Date.now() * 0.001;
-  // var sizes = flameGeometry.attributes.size.array;
   var positions = flameGeometry.attributes.position.array;
   var colors = flameGeometry.attributes.color.array;
-  //var fp = flameGeometry.attributes.position.array
 
   //if (!moveCameraTween.isPlaying()){
-    for (var j = 0; j < particles; j++) {
-      var vx = positions [j * 3];
-      var vy = positions [j * 3 + 1];
-      var vz = positions [j * 3 + 2];
-      var h = 204/360; // ( 360 * ( 1.0 + time ) % 360 ) / 360;
-      var s = 0.8 + 0.2 * Math.sin(j) ;
-      //( 0.5 + 0.5* Math.sin(time)) //0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI) ;
-      var l = 0.3 +
-              0.2 * Math.sin(vy * 10 * Math.PI + time) +
-              0.2 * Math.sin(vx * 10 * Math.PI + time) +
-              0.3 * Math.sin(vz / ( thickNess * thickDis ) * Math.PI);
+  for (var j = 0; j < particles; j++) {
+    var vx = positions[j * 3];
+    var vy = positions[j * 3 + 1];
+    var vz = positions[j * 3 + 2];
+    var h = 204 / 360; // ( 360 * ( 1.0 + time ) % 360 ) / 360;
+    var s = 0.8 + 0.2 * Math.sin(j);
+    //( 0.5 + 0.5* Math.sin(time)) //0.3 + 0.3 * Math.sin(gv[j].z / ( thickNess * thickDis ) * Math.PI) ;
+    var l = 0.3 +
+      0.2 * Math.sin(vy * 10 * Math.PI + time) +
+      0.2 * Math.sin(vx * 10 * Math.PI + time) +
+      0.3 * Math.sin(vz / (thickNess * thickDis) * Math.PI);
 
-      var color=new THREE.Color();
-      color.setHSL(h, s ,l);
-      colors[j * 3 ]    = color.r;
-      colors[j * 3 + 1] = color.g;
-      colors[j * 3 + 2] = color.b;
-    }
+    var color = new THREE.Color();
+    color.setHSL(h, s, l);
+    colors[j * 3] = color.r;
+    colors[j * 3 + 1] = color.g;
+    colors[j * 3 + 2] = color.b;
+  }
   flameGeometry.attributes.color.needsUpdate = true;
 }
 
@@ -310,67 +308,6 @@ function flameRotationStop() {
     rotateTweenR.stop();
   }
 }
-/*
-* Rotate flame back to original position
-*/
-function flameRotateBack() {
-  new TWEEN.Tween(flame.rotation)
-    .to({ y: 0 }, 2000)
-    .easing(TWEEN.Easing.Quadratic.InOut)
-    .start();
-}
-
-/*
-* Start the flame Pan Cross
-*/
-function flamePanCross() {
-  //console.log("flame start rotation");
-  if (!rotateTweenZ && flame != undefined) {
-    rotateTweenZ = new TWEEN.Tween(camera.rotation)
-      .to({ z: -0.5 }, 50000)
-      .easing(TWEEN.Easing.Linear.None)
-    rotateTweenZ.start();
-  } else if (rotateTweenZ) {
-    rotateTweenZ.start();
-  }
-}
-
-/*
-* Stop the flame pan Cross
-*/
-function flamePanCrossStop() {
-  //console.log("flame stop rotation");
-  if (rotateTweenZ) {
-    rotateTweenZ.stop();
-  }
-}
-
-/**
- * Init animation move camera to destination
- * @param {int} i camera position
- */
-function moveCamera(i) {
-  //flameRotationStop();
-  if (i === undefined) {
-    i = cameraInter;
-  }
-  moveCameraTween = animateVector3(camera.position, cameraPositions[i], {
-    duration: 3000,
-    easing: TWEEN.Easing.Quadratic.InOut,
-    update: function (d) { },
-    onStart: function () {
-    },
-    onComplete: function () {
-    },
-    onUpdate: function (d) {
-      console.log(camera.position);
-    }
-  })
-  rotateCamereTween = animateVector3(camera.rotation, cameraRotation[i], {
-    duration: 3000,
-    easing: TWEEN.Easing.Quadratic.Out
-  })
-}
 
 function onWindowResize() {
   windowHalfX = window.innerWidth / 2;
@@ -380,12 +317,18 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  resizeCircle();
+}
+function resizeCircle() {
+  var circle;
+  var radius = 2000;
+  var bk_lg = 457;
+  var yIndent = -radius + bk_lg;
 
-  anime({
-    targets: ["#section" + current_section + " img"],
-    height: SCREEN_HEIGHT,
-    duration: 0
-  })
+  circle = document.getElementById('hero_clip').getElementsByTagName("circle")[0];
+  circle.setAttribute("cx", windowHalfX);
+  circle.setAttribute("cy", yIndent);
+  circle.setAttribute("r", radius);
 }
 
 /*

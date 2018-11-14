@@ -45,12 +45,14 @@
   position: absolute;
   z-index: 10;
   cursor: pointer;
-  -webkit-transition: all 1s ease-out;
-  transition: all 1s ease-out;
+  -webkit-transition: all 2s ease-out;
+  transition: all 2s ease-out;
 }
 
 .circlar_timeline .progress-dot:hover {
   background: #8999BE;
+  -webkit-transition: all 1s ease-out;
+  transition: all 1s ease-out;
 }
 
 .circlar_timeline .progress-dot.active {

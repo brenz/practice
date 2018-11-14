@@ -10,6 +10,10 @@ $teal_line:#50e3c2;
 @import "components/flame_logo";
 @import "components/hero_image";
 @import "components/button";
+@import "components/overlay";
+@import "components/hamburger";
+@import "components/breadcrum";
+@import "components/nav";
 
 @media (min-width: 1200px){
   .container {

@@ -1,0 +1,13 @@
+.navbar {
+  background: none;
+  width: 100%;
+}
+
+.navbar-dark .navbar-toggler-icon {
+  width: 24px;
+  height: 18.9px;
+  border-radius: 0.7px;
+  background-image: url("../img/hamburger.svg");
+  display: block;
+}
+/*# sourceMappingURL=nav.css.map */

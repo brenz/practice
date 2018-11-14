@@ -1,0 +1,21 @@
+@charset "UTF-8";
+.breadcrumb {
+  background: none;
+  text-align: center;
+}
+
+.breadcrumb li.breadcrumb-item a {
+  color: #ffffff;
+}
+
+.breadcrumb li.breadcrumb-item.active {
+  color: #ffffff;
+}
+
+.breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  display: inline-block;
+  padding-right: .5rem;
+  content: "►";
+  color: #ffffff;
+}
+/*# sourceMappingURL=breadcrum.css.map */

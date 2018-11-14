@@ -13,45 +13,76 @@
 
 <body>
 
+  <!-- Nav -->
+  <nav class="navbar navbar-dark fixed-top">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navmenupopup" aria-controls="navmenupopup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="#">
+      <img src="img/kpsom_logo.svg" width="228" height="44" alt="Kaiser Permanente School of Medicine">
+    </a>
+    <form class="form-inline">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    <div class="pos-f-t">
+        <div class="collapse" id="navmenupopup">
+          <div class="bg-dark p-4">
+            <h5 class="text-white h4">Collapsed content</h5>
+            <span class="text-muted">Toggleable via the navbar brand.</span>
+          </div>
+    </div>
+  </nav>
+
   <section class="hero_image hero_clip">
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <div class="col-lg-8 mt-5">
+          <span class="flame_logo justify-content-center mx-auto"></span>
+          <ol class="breadcrumb justify-content-center">
+            <li class="breadcrumb-item"><a href="#">Education</a></li>
+            <li class="breadcrumb-item active">Accoreditaion</li>
+          </ol>
+          </ul>
+          <h1 class="text-center mt-2">Our Accreditation</h1>
+        </div>
+      </div>
+    </div>
+    <div class="darkblue_overlay"></div>
     <div id="flame-container"></div>
   </section>
 
+  <section>
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <div class="col-lg-8 mt-5">
+          <p class="body-lg text-center">
+            Currently, the School is provisionally approved by the Bureau for Private Postsecondary Education to offer
+            degree programs and has preliminary accreditation from the Liaison Committee of Medical Educations.
+            <br /><br />
+            As a new medical school, the Kaiser Permanente School of Medicine is in the process of obtaining required
+            accreditation and approval status.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
   <svg width="0" height="0">
-      <defs>
-        <clipPath id="hero_clip">
-          <circle cx="50%" cy="-50%" r="2000"/>
-        </clipPath>
-      </defs>
-    </svg>
+    <defs>
+      <clipPath id="hero_clip">
+        <circle cx="960" cy="0" r="1000" />
+      </clipPath>
+    </defs>
+  </svg>
 
   <!-- Todo: Going to refactroy and load Three.js with package -->
   <script src="js/three.js"></script>
   <script src="js/WebGL.js"></script>
   <script src="js/Tween.js"></script>
-
-  <script type="x-shader/x-vertex" id="vertexshader">
-    attribute float size;
-    varying vec3 vColor;
-    void main() {
-      vColor = color;
-      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-      gl_PointSize = size * ( 300.0 / -mvPosition.z );
-      gl_Position = projectionMatrix * mvPosition;
-    }
-  </script>
-
-  <script type="x-shader/x-fragment" id="fragmentshader">
-    uniform sampler2D texture;
-    uniform float opacity;
-    uniform vec3 topColor;
-    varying vec3 vColor;
-    void main() {
-      gl_FragColor = vec4(topColor*vColor, opacity );
-      gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-    }
-  </script>
-
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="kp_flame_hero_image.js"></script>
 
 </body>

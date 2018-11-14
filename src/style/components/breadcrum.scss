@@ -1,0 +1,16 @@
+.breadcrumb{
+  background:none;
+  text-align: center;
+  li.breadcrumb-item a{
+    color:#ffffff;
+  }
+  li.breadcrumb-item.active{
+    color:#ffffff;
+  }
+  .breadcrumb-item+.breadcrumb-item::before {
+    display: inline-block;
+    padding-right: .5rem;
+    content: "►";
+    color:#ffffff;
+}
+}
